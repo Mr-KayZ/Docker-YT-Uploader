@@ -63,3 +63,20 @@ The YouTube Data API v3 has a default quota of **10,000 units per day**. Each vi
 
 ## Development Status
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
+
+This is what the overall project structure exist as:
+```
+Docker-YT-Uploader/
+├── app/                    <- Astro project for front-end
+│   ├── src/
+│   ├── public/
+│   ├── astro.config.mjs
+│   └── package.json
+├── uploads/                <- The watched folder (mounted as a volume later)
+├── Dockerfile
+├── docker-compose.yml
+├── .dockerignore
+└── README.md
+```
+
+Use this as the following template to understand where to put stuff as things go on, update project structure as project progresses.
