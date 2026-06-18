@@ -1,99 +1,56 @@
 ---
-import { readdir, stat } from 'node:fs/promises';
-import path from 'node:path';
+import { initWatcher, getWatchedFiles } from '../lib/watcher';
 
-const UPLOADS_DIR = '/uploads';
-
-interface FileEntry {
-  name: string;
-  size: number;
-  modified: Date;
-}
-
-let files: FileEntry[] = [];
-let error: string | null = null;
-
-try {
-  const entries = await readdir(UPLOADS_DIR);
-  
-  files = await Promise.all(
-    entries.map(async (name) => {
-      const filePath = path.join(UPLOADS_DIR, name);
-      const stats = await stat(filePath);
-      return {
-        name,
-        size: stats.size,
-        modified: stats.mtime,
-      };
-    })
-  );
-} catch (e) {
-  error = `Could not read uploads directory: ${(e as Error).message}`;
-}
-
-function formatSize(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 ** 2) return `${(bytes / 1024).toFixed(1)} KB`;
-  if (bytes < 1024 ** 3) return `${(bytes / 1024 ** 2).toFixed(1)} MB`;
-  return `${(bytes / 1024 ** 3).toFixed(2)} GB`;
-}
+initWatcher();
+const files = getWatchedFiles();
 ---
 
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Docker-YT-Uploader — Upload Test</title>
+    <title>Docker-YT-Uploader</title>
     <style>
       body { font-family: sans-serif; max-width: 800px; margin: 2rem auto; padding: 0 1rem; }
-      h1 { font-size: 1.5rem; margin-bottom: 0.5rem; }
-      .path { font-size: 0.85rem; color: #666; margin-bottom: 1.5rem; }
-      .error { background: #fee; border: 1px solid #f88; padding: 1rem; border-radius: 6px; color: #900; }
-      .empty { background: #f5f5f5; border: 1px solid #ddd; padding: 1.5rem; border-radius: 6px; color: #555; text-align: center; }
+      h1 { font-size: 1.5rem; margin-bottom: 0.25rem; }
+      .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+      .empty { background: #f5f5f5; border: 1px solid #ddd; padding: 1.5rem;
+               border-radius: 6px; color: #555; text-align: center; }
       table { width: 100%; border-collapse: collapse; }
-      th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 2px solid #ddd; font-size: 0.85rem; color: #444; }
+      th { text-align: left; padding: 0.5rem 0.75rem; border-bottom: 2px solid #ddd;
+           font-size: 0.85rem; color: #444; }
       td { padding: 0.5rem 0.75rem; border-bottom: 1px solid #eee; font-size: 0.9rem; }
       .count { margin-top: 1rem; font-size: 0.85rem; color: #666; }
     </style>
   </head>
   <body>
-    <h1>Uploads Folder Test</h1>
-    <p class="path">Reading from: <code>{UPLOADS_DIR}</code></p>
+    <h1>Docker-YT-Uploader</h1>
+    <p class="subtitle">Watching <code>/uploads</code> for video files</p>
 
-    {error && (
-      <div class="error">
-        <strong>Error:</strong> {error}
-      </div>
-    )}
-
-    {!error && files.length === 0 && (
+    {files.length === 0 ? (
       <div class="empty">
-        <p>No files found in <code>{UPLOADS_DIR}</code></p>
-        <p>Drop a file into the <code>uploads/</code> folder on your host to test the volume mount.</p>
+        <p>No video files detected yet.</p>
+        <p>Drop a supported video file (<code>.mp4</code>, <code>.mkv</code>, <code>.mov</code>, etc.) into the <code>uploads/</code> folder.</p>
       </div>
-    )}
-
-    {!error && files.length > 0 && (
+    ) : (
       <>
         <table>
           <thead>
             <tr>
               <th>Filename</th>
-              <th>Size</th>
-              <th>Last Modified</th>
+              <th>Detected At</th>
             </tr>
           </thead>
           <tbody>
             {files.map((file) => (
               <tr>
                 <td>{file.name}</td>
-                <td>{formatSize(file.size)}</td>
-                <td>{file.modified.toLocaleString()}</td>
+                <td>{file.addedAt.toLocaleString()}</td>
               </tr>
             ))}
           </tbody>
         </table>
-        <p class="count">{files.length} file{files.length !== 1 ? 's' : ''} found</p>
+        <p class="count">{files.length} file{files.length !== 1 ? 's' : ''} detected</p>
       </>
     )}
   </body>
