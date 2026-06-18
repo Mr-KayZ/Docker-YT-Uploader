@@ -1,0 +1,11 @@
+services:
+  yt-uploader:
+    build: .
+    container_name: docker-yt-uploader
+    ports:
+      - "4321:4321"
+    volumes:
+      - ./uploads:/uploads   # Host watch folder → container /uploads
+    environment:
+      - NODE_ENV=production
+    restart: unless-stopped

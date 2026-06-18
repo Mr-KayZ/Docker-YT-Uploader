@@ -1,0 +1,1 @@
+This is the watched folder for videos. This is a temporary placeholder here so gitignore doesn't nuke it by accident.
