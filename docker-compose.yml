@@ -5,7 +5,9 @@ services:
     ports:
       - "4321:4321"
     volumes:
-      - ./uploads:/uploads   # Host watch folder → container /uploads
+      - ./uploads:/uploads
     environment:
       - NODE_ENV=production
+      - HOST=0.0.0.0
+      - PORT=4321
     restart: unless-stopped
