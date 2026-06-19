@@ -2,7 +2,7 @@
 // GET /api/files - list video files available in /uploads
 
 import type { APIRoute } from 'astro';
-import { getWatchedFiles, isWatcherReady } from '../../lib/watcher.js';
+import { getWatchedFiles, isWatcherReady } from '../../lib/watcher.ts';
 
 export const GET: APIRoute = () => {
   return new Response(

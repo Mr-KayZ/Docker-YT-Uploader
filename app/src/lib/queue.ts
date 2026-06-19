@@ -4,8 +4,8 @@
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { DATA_DIR } from './paths.ts';
 
-const DATA_DIR     = '/data';
 const QUEUE_PATH   = path.join(DATA_DIR, 'queue.json');
 const HISTORY_PATH = path.join(DATA_DIR, 'history.json');
 
@@ -54,6 +54,7 @@ let dataDirReady = false;
 export async function ensureDataDir(): Promise<void> {
   if (dataDirReady) return;
   // recursive:true is a no-op if the directory already exists - no existsSync needed
+  await mkdir(DATA_DIR, { recursive: true });
   await mkdir(path.join(DATA_DIR, 'thumbnails'), { recursive: true });
   await mkdir(path.join(DATA_DIR, 'captions'),   { recursive: true });
   dataDirReady = true;

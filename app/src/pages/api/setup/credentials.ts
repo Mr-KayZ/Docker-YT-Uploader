@@ -3,7 +3,7 @@
 // It validates the file and saves it to the server if it's valid.
 
 import type { APIRoute } from 'astro';
-import { saveClientSecret } from '../../../lib/auth.js';
+import { saveClientSecret } from '../../../lib/auth.ts';
 
 const json = (body: object, status = 200) =>
   new Response(JSON.stringify(body), {

@@ -2,7 +2,7 @@
 // Handles the Google OAuth2 callback - exchanges the auth code for tokens and saves them.
 
 import type { APIRoute } from 'astro';
-import { createOAuthClient, saveTokens } from '../../../lib/auth.js';
+import { createOAuthClient, saveTokens } from '../../../lib/auth.ts';
 
 const redirect = (location: string) =>
   new Response(null, { status: 302, headers: { Location: location } });

@@ -2,7 +2,7 @@
 // Initiates the Google OAuth2 flow - redirects to Google's consent screen.
 
 import type { APIRoute } from 'astro';
-import { createOAuthClient, SCOPES, hasClientSecret } from '../../../lib/auth.js';
+import { createOAuthClient, SCOPES, hasClientSecret } from '../../../lib/auth.ts';
 
 const redirect = (location: string) =>
   new Response(null, { status: 302, headers: { Location: location } });

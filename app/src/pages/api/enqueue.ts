@@ -6,6 +6,7 @@ import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
 import { writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
+import { DATA_DIR, UPLOADS_DIR } from '../../lib/paths.ts';
 import {
   addToQueue,
   getQueue,
@@ -13,8 +14,8 @@ import {
   type QueueEntry,
   type PrivacyStatus,
   type AudienceType,
-} from '../../lib/queue.js';
-import { validateEntry } from '../../lib/uploader.js';
+} from '../../lib/queue.ts';
+import { validateEntry } from '../../lib/uploader.ts';
 
 const json = (body: object, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -40,8 +41,8 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ error: 'fileName and title are required.' }, 400);
 
     // Guard against path traversal
-    const filePath = path.join('/uploads', path.basename(fileName));
-    if (filePath !== path.join('/uploads', fileName))
+    const filePath = path.join(UPLOADS_DIR, path.basename(fileName));
+    if (filePath !== path.join(UPLOADS_DIR, fileName))
       return json({ error: 'Invalid fileName.' }, 400);
 
     const description       = (form.get('description')      as string) ?? '';
@@ -94,7 +95,7 @@ export const POST: APIRoute = async ({ request }) => {
     const thumbFile = form.get('thumbnail') as File | null;
     if (thumbFile && thumbFile.size > 0) {
       const ext = path.extname(thumbFile.name).toLowerCase() || '.jpg';
-      thumbnailPath = path.join('/data', 'thumbnails', `${entry.id}${ext}`);
+      thumbnailPath = path.join(DATA_DIR, 'thumbnails', `${entry.id}${ext}`);
       await writeFile(thumbnailPath, Buffer.from(await thumbFile.arrayBuffer()));
       entry.thumbnailPath = thumbnailPath;
     }
@@ -103,7 +104,7 @@ export const POST: APIRoute = async ({ request }) => {
     const capFile = form.get('caption') as File | null;
     if (capFile && capFile.size > 0) {
       const ext = path.extname(capFile.name).toLowerCase() || '.srt';
-      captionPath = path.join('/data', 'captions', `${entry.id}${ext}`);
+      captionPath = path.join(DATA_DIR, 'captions', `${entry.id}${ext}`);
       await writeFile(captionPath, Buffer.from(await capFile.arrayBuffer()));
       entry.captionPath = captionPath;
     }

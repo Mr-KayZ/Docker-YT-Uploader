@@ -5,8 +5,7 @@
 import chokidar, { type FSWatcher } from 'chokidar';
 import { mkdir } from 'node:fs/promises';
 import path from 'node:path';
-
-const UPLOADS_DIR = '/uploads';
+import { UPLOADS_DIR } from './paths.ts';
 
 const VIDEO_EXTENSIONS = new Set([
   '.mp4', '.mkv', '.mov', '.avi', '.webm',

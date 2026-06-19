@@ -2,9 +2,9 @@
 // Background scheduler - polls queue.json and fires uploads when their
 // scheduledUploadAt time arrives (or immediately if scheduledUploadAt is null).
 
-import { ensureDataDir, getQueue } from './queue.js';
-import { ensureAuthDir } from './auth.js';
-import { uploadEntry } from './uploader.js';
+import { ensureDataDir, getQueue } from './queue.ts';
+import { ensureAuthDir } from './auth.ts';
+import { uploadEntry } from './uploader.ts';
 
 const POLL_INTERVAL_MS = 60_000;
 const MAX_CONCURRENT   = 2; // max simultaneous uploads

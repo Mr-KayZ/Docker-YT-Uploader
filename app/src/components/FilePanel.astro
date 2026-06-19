@@ -1,0 +1,109 @@
+---
+// app/src/components/FilePanel.astro
+// Left pane: upload queue file list shell.
+// The file list contents are injected at runtime by the polling script in index.astro.
+---
+
+<aside class="panel-left">
+  <div class="panel-left-header">
+    <h2>Upload Queue</h2>
+    <span class="file-count" id="fileCount">0</span>
+  </div>
+  <div class="file-list" id="fileList">
+    <div class="file-empty">
+      <p>No video files detected.<br/>Drop a file into <code>/videos</code>.</p>
+    </div>
+  </div>
+</aside>
+
+<style>
+  .panel-left {
+    width: 320px;
+    flex-shrink: 0;
+    background: white;
+    border-right: 1px solid #e5e5e5;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .panel-left-header {
+    padding: 1rem 1.25rem 0.75rem;
+    border-bottom: 1px solid #f0f0f0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .panel-left-header h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: #888;
+  }
+  .file-count {
+    font-size: 0.75rem;
+    background: #f0f0f0;
+    color: #555;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+  .file-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 0.5rem;
+  }
+  .file-empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: #aaa;
+    font-size: 0.85rem;
+    line-height: 1.6;
+  }
+
+  /* File items - injected dynamically but styled here */
+  .file-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1.5px solid transparent;
+    transition: background 0.1s, border-color 0.1s;
+    margin-bottom: 0.25rem;
+  }
+  .file-item:hover { background: #f9f9f9; }
+  .file-item.selected {
+    background: #e8e8e8;
+    border-color: #b0b0b0;
+  }
+  .file-item.queued    { opacity: 0.5; pointer-events: none; }
+  .file-item.uploading { border-color: #2563eb; background: #eff6ff; }
+  .file-item.done      { opacity: 0.5; pointer-events: none; }
+
+  .file-icon {
+    width: 36px;
+    height: 36px;
+    background: #f5f5f5;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #888;
+  }
+  .file-info { min-width: 0; flex: 1; }
+  .file-name {
+    font-size: 0.85rem;
+    font-weight: 500;
+    color: #1a1a1a;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .file-meta {
+    font-size: 0.75rem;
+    color: #999;
+    margin-top: 0.2rem;
+  }
+</style>

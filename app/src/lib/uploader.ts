@@ -7,8 +7,8 @@ import type { youtube_v3 } from 'googleapis';
 import { createReadStream, statSync } from 'node:fs';
 import path from 'node:path';
 import { existsSync } from 'node:fs';
-import { getAuthenticatedClient } from './auth.js';
-import { type QueueEntry, updateQueueEntry, moveToHistory } from './queue.js';
+import { getAuthenticatedClient } from './auth.ts';
+import { type QueueEntry, updateQueueEntry, moveToHistory } from './queue.ts';
 
 export const YT_CATEGORIES: Record<string, string> = {
   '1':  'Film & Animation',

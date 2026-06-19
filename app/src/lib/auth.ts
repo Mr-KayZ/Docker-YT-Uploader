@@ -5,8 +5,8 @@ import { google } from 'googleapis';
 import { readFile, writeFile, mkdir } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
+import { AUTH_DIR } from './paths.ts';
 
-const AUTH_DIR     = '/auth';
 const SECRET_PATH  = path.join(AUTH_DIR, 'client_secret.json');
 const TOKENS_PATH  = path.join(AUTH_DIR, 'tokens.json');
 const REDIRECT_URI = 'http://localhost:4321/api/auth/callback';
