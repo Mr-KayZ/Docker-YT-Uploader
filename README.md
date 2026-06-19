@@ -94,16 +94,20 @@ The container is designed to run persistently alongside other services on a NAS 
 - **Upload history view** - Shows previously uploaded videos from your YouTube channel
 - **Sidecar JSON for metadata** - Optional `.meta.json` files per video for pre-filling metadata fields
 - **Thumbnail upload support** - Custom thumbnail selection and upload via the API
-- **In-browser upload notifications** - The web client notifies you when an upload completes
+- **In-browser upload notifications** - On upload completion, a toast shows the video title and a direct YouTube link; all notifications persist in a bell icon popover in the header
 - **Browser-based OAuth setup** - Upload your `client_secret.json` and authenticate entirely through the web UI; no CLI or manual file placement required
+- **Upload info panel** - Fixed bottom-left pane showing active upload status, live progress bar, upload speed, and current API quota usage vs. daily limit
+- **Playlist support** - Pulls your existing YouTube playlists via the API so you can assign a video to one or more playlists at upload time
+- **Docker log viewer** - Dedicated page showing live console output from the container for debugging and upload monitoring
 
 ### Planned Features
 These are on the roadmap for a future release:
-- **Upload progress indicator** - Live progress bar with estimated time remaining for active uploads
+- **Upload progress indicator** - Live progress bar with estimated time remaining and a spinner while the upload is in flight
 - **Resumable uploads** - Leverages the YouTube Data API v3's resumable upload sessions, essential for large files where a mid-upload failure would otherwise require starting over
 - **Queue management** - Queue multiple videos, reorder them, pause, or cancel pending uploads
 - **Drag-and-drop upload** - Optionally drag and drop video files directly into the web UI (note: streaming multi-GB files through the browser requires careful handling)
 - **Additional notification channels** - Beyond in-browser notifications, exploring options like webhooks or self-hosted push services (e.g. ntfy, Gotify) for truly headless setups
+- **Mount point configuration** - Setup UI for configuring the watched folder path and auth directory, so no manual `docker-compose.yml` edits are needed for common cases
 
 ---
 
@@ -120,15 +124,13 @@ The YouTube Data API v3 has a default quota of **10,000 units per day**. Each vi
 ## Development Status
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
 
-### Tests to run:
-- Check if this works fully as a solo Docker container - Create a docker image now
-- Create additional setup pages for setting mount points for folders (namely uploads (rename to videos) and auth)
-- Customize it better with astro - research more into UI stuff for these!
-   - Add icons on the right to showcase different things:
-   - Bell icon for notifications with circular button
-   - 
-- Improve the upload section better
-   - Make the selected video option darken a bit, and have a curved box outline around it
-   - Split the right hand pane and left hand pane fully so they scroll separately
-   - Have an info panel with upload status and all on a new fixed pane on the bottom left that also shows the progress bar and upload speed
-   - Also put in the quota used and limit on the info panel
+### Fixes to Implement
+These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
+
+- **Verify solo Docker container operation** - Confirm the app works correctly as a standalone Docker image; build and test a Docker image independent of compose
+- **Refactor `index.astro` into components** - The main page is excessively large; break it into Astro layouts, components, and an `assets/` folder for easier maintenance
+- **Consolidate setup flow into a single modal-based page** - Replace the separate `setup.astro` route with an inline modal system on `index.astro`; explore using Astro component files as modal panels for maintainability
+- **Separate left and right panel scroll contexts** - The file list (left pane) and metadata form (right pane) should each scroll independently
+- **Selected file highlight** - The active file in the left panel should darken slightly and show a rounded border to make the selection state unambiguous
+- **Upload complete toast notification** - On successful upload, show a green toast (with darker green border and a dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should also appear in the bell icon popover
+- **Tooltips** - Enable tooltip support across the UI; icon buttons in the header (bell, logs) should show a tooltip on hover describing their function
