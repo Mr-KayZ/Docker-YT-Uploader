@@ -6,7 +6,7 @@ import type { APIRoute } from 'astro';
 import { randomUUID } from 'node:crypto';
 import { writeFile, unlink } from 'node:fs/promises';
 import path from 'node:path';
-import { DATA_DIR, UPLOADS_DIR } from '../../lib/paths.ts';
+import { DATA_DIR, VIDEOS_DIR } from '../../lib/paths.ts';
 import {
   addToQueue,
   getQueue,
@@ -41,8 +41,8 @@ export const POST: APIRoute = async ({ request }) => {
       return json({ error: 'fileName and title are required.' }, 400);
 
     // Guard against path traversal
-    const filePath = path.join(UPLOADS_DIR, path.basename(fileName));
-    if (filePath !== path.join(UPLOADS_DIR, fileName))
+    const filePath = path.join(VIDEOS_DIR, path.basename(fileName));
+    if (filePath !== path.join(VIDEOS_DIR, fileName))
       return json({ error: 'Invalid fileName.' }, 400);
 
     const description       = (form.get('description')      as string) ?? '';
