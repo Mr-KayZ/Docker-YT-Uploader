@@ -5,11 +5,14 @@ services:
     ports:
       - "4321:4321"
     volumes:
-      - ./uploads:/uploads
+      - ./videos:/videos
       - ./auth:/auth
       - ./data:/data
     environment:
       - NODE_ENV=production
       - HOST=0.0.0.0
       - PORT=4321
+      - AUTH_DIR=/auth
+      - DATA_DIR=/data
+      - VIDEOS_DIR=/videos
     restart: unless-stopped

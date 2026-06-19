@@ -28,3 +28,4 @@ Thumbs.db
 auth/client_secret.json
 auth/tokens.json
 data/*
+videos/*
