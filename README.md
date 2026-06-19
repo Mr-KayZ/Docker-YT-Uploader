@@ -1,4 +1,4 @@
-# Docker-YT-Uploader: Ver. 0.6.0
+# Docker-YT-Uploader: Ver. 0.7.0
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
 ## Use Case
@@ -134,8 +134,8 @@ This is a solo project currently in very early development. Features will be imp
 | 0.4.0 | Uploader core + scheduler | Complete |
 | 0.5.0 | Web UI - metadata form, file list panel, enqueue flow | Complete |
 | 0.6.0 | Cross-file integration fixes, route corrections, server init hooks | Complete |
-| 0.7.0 | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | In Progress |
-| 0.8.0 | Sidecar `.meta.json` support - auto-fill metadata form from file | Planned |
+| 0.7.0 | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | Complete |
+| 0.8.0 | Sidecar `.meta.json` support - auto-fill metadata form from file | In Progress |
 | 0.9.0 | Resumable uploads + live upload progress indicator + spinner | Planned |
 | 0.9.1 | Upload info panel - progress bar, upload speed, quota usage | Planned |
 | 0.9.2 | In-browser notifications - toast on completion + bell popover with history | Planned |
