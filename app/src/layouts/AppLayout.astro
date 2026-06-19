@@ -1,7 +1,8 @@
 ---
 // app/src/layouts/AppLayout.astro
-// Global HTML shell used by all pages. Import global.css here so styles
-// are consistent across index.astro and setup.astro.
+// Global HTML shell used by all pages.
+
+import '../components/styles/global.css';
 
 export interface Props {
   title?: string;
@@ -14,7 +15,6 @@ const { title = 'Docker-YT-Uploader' } = Astro.props;
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>{title}</title>
-  <link rel="stylesheet" href="/src/components/styles/global.css" />
 </head>
 <body>
   <slot />
