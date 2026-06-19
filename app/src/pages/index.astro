@@ -741,9 +741,9 @@ startScheduler();
     try {
       const [filesRes, uploadRes] = await Promise.all([
         fetch('/api/files'),
-        fetch('/api/upload'),
+        fetch('/api/enqueue'),
       ]);
-      const files   = await filesRes.json() as { name: string; path: string; addedAt: string }[];
+      const { files } = await filesRes.json() as { ready: boolean; files: { name: string; path: string; addedAt: string }[] };
       const { queue, history } = await uploadRes.json() as {
         queue:   { fileName: string; status: string }[];
         history: { fileName: string; status: string }[];
@@ -834,7 +834,7 @@ startScheduler();
     if (capFile)   form.append('caption',   capFile);
 
     try {
-      const res  = await fetch('/api/upload', { method: 'POST', body: form });
+      const res  = await fetch('/api/enqueue', { method: 'POST', body: form });
       const data = await res.json();
       if (res.ok) {
         showStatus(

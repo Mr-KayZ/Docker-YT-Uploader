@@ -1,5 +1,5 @@
 ---
-import { hasClientSecret, hasTokens } from '../lib/auth';
+import { hasClientSecret, hasTokens } from '../lib/auth.js';
 
 if (hasTokens()) {
   return Astro.redirect('/');
@@ -272,7 +272,7 @@ const errorMessage = errorParam ? (errorMessages[errorParam] ?? 'An unknown erro
         form.append('file', file);
 
         try {
-          const res  = await fetch('/api/setup/upload', { method: 'POST', body: form });
+          const res  = await fetch('/api/setup/credentials', { method: 'POST', body: form });
           const data = await res.json();
 
           if (res.ok) {
