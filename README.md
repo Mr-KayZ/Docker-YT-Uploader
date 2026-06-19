@@ -1,4 +1,4 @@
-# Docker-YT-Uploader
+# Docker-YT-Uploader: Ver. 0.6.0
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
 ## Use Case
@@ -121,10 +121,14 @@ The YouTube Data API v3 has a default quota of **10,000 units per day**. Each vi
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
 
 ### Tests to run:
-- Check if this works fully as a solo Docker container
+- Check if this works fully as a solo Docker container - Create a docker image now
 - Create additional setup pages for setting mount points for folders (namely uploads (rename to videos) and auth)
 - Customize it better with astro - research more into UI stuff for these!
+   - Add icons on the right to showcase different things:
+   - Bell icon for notifications with circular button
+   - 
 - Improve the upload section better
    - Make the selected video option darken a bit, and have a curved box outline around it
-   - Add a log button on the bottom left of the right hand pane which opens up another pane on the bottom of the left hand pane that shows the logs in full detail
    - Split the right hand pane and left hand pane fully so they scroll separately
+   - Have an info panel with upload status and all on a new fixed pane on the bottom left that also shows the progress bar and upload speed
+   - Also put in the quota used and limit on the info panel
