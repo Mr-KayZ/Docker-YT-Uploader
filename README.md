@@ -124,3 +124,7 @@ This is a solo project currently in very early development. Features will be imp
 - Check if this works fully as a solo Docker container
 - Create additional setup pages for setting mount points for folders (namely uploads (rename to videos) and auth)
 - Customize it better with astro - research more into UI stuff for these!
+- Improve the upload section better
+   - Make the selected video option darken a bit, and have a curved box outline around it
+   - Add a log button on the bottom left of the right hand pane which opens up another pane on the bottom of the left hand pane that shows the logs in full detail
+   - Split the right hand pane and left hand pane fully so they scroll separately

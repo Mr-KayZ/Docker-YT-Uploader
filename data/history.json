@@ -1,0 +1,29 @@
+[
+  {
+    "id": "c81eb034-a70e-4744-a4c7-bb955de8f367",
+    "filePath": "/uploads/Start intro.mp4",
+    "fileName": "Start intro.mp4",
+    "queuedAt": "2026-06-19T09:00:16.998Z",
+    "scheduledUploadAt": null,
+    "title": "Video 2 for test",
+    "description": "Test video 2\r\n\r\ntest DESCRIPTION",
+    "tags": [
+      "gaming"
+    ],
+    "categoryId": "26",
+    "privacyStatus": "unlisted",
+    "publishAt": null,
+    "audience": "general",
+    "selfDeclaredMadeForKids": false,
+    "ageRestricted": false,
+    "language": "en",
+    "thumbnailPath": null,
+    "captionPath": null,
+    "captionLanguage": "en",
+    "status": "done",
+    "youtubeVideoId": "AcoeM1hLRNE",
+    "errorMessage": null,
+    "uploadStartedAt": null,
+    "uploadFinishedAt": "2026-06-19T09:00:42.367Z"
+  }
+]
