@@ -1,31 +1,26 @@
 // app/src/pages/api/auth/start.ts
-// This API route initiates the OAuth flow by redirecting the user to the Google authorization URL. It checks if the client secret is available, and if not, it redirects to the setup page.
+// Initiates the Google OAuth2 flow - redirects to Google's consent screen.
 
 import type { APIRoute } from 'astro';
-import { createOAuthClient, SCOPES, hasClientSecret } from '../../../lib/auth';
+import { createOAuthClient, SCOPES, hasClientSecret } from '../../../lib/auth.js';
 
-// Handle GET requests to start the OAuth flow
+const redirect = (location: string) =>
+  new Response(null, { status: 302, headers: { Location: location } });
+
 export const GET: APIRoute = async () => {
+  if (!hasClientSecret())
+    return redirect('/setup');
 
-  // If the client secret is not set up, redirect to the setup page
-  if (!hasClientSecret()) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: '/setup' },
+  try {
+    const client  = await createOAuthClient();
+    const authUrl = client.generateAuthUrl({
+      access_type: 'offline',
+      prompt:      'consent',
+      scope:       SCOPES,
     });
+    return redirect(authUrl);
+  } catch (err) {
+    console.error('[auth] Failed to generate auth URL:', err);
+    return redirect('/setup?error=auth_init_failed');
   }
-
-  // Create an OAuth client and generate the authorization URL
-  const client  = await createOAuthClient();
-  const authUrl = client.generateAuthUrl({
-    access_type: 'offline',
-    prompt:      'consent',
-    scope:       SCOPES,
-  });
-
-  // Redirect the user to the Google authorization URL
-  return new Response(null, {
-    status: 302,
-    headers: { Location: authUrl },
-  });
 };

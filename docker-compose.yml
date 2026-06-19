@@ -7,6 +7,7 @@ services:
     volumes:
       - ./uploads:/uploads
       - ./auth:/auth
+      - ./data:/data
     environment:
       - NODE_ENV=production
       - HOST=0.0.0.0
