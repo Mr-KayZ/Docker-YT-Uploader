@@ -13,49 +13,54 @@ Add the fact that uploading large videos hammers my network connection, making i
 ## Setup
 
 ### 1. Google Cloud and YouTube API Credentials
-This app requires you create your own Google Cloud project to authenticate with the YouTube Data API v3. Google does not allow a single set of credentials to be shared publicly for uploading purposes.
+This app requires you to create your own Google Cloud project to authenticate with the YouTube Data API v3. Google does not allow a single set of credentials to be shared publicly for uploading purposes.
 
 #### Step 1 - Create a Google Cloud Project
 1. Go to [console.cloud.google.com](https://console.cloud.google.com)
-2. Click on **Select a project** (top right corner next to the Google Cloud brand name) -> **New Project**
-3. Name it anything you want (e.g. `my-yt-uploader`), then hit **Create**
-4. Now select the project you just created in the dropdown **Select a project**.
+2. Click **Select a project** (top-right, next to the Google Cloud logo) → **New Project**
+3. Name it anything you want (e.g. `my-yt-uploader`), then click **Create**
+4. Select the project you just created from the **Select a project** dropdown
 
-#### Step 2. Enable YouTube Data API v3
-1. Open the left sidebar via the hamburger icon on the top left corner.
-2. Navigate to **APIs & Services** -> **Library**
-3. Search for `YouTube Data API v3` -> **Enable**
+#### Step 2 - Enable YouTube Data API v3
+1. Open the left sidebar via the hamburger icon (top-left)
+2. Navigate to **APIs & Services** → **Library**
+3. Search for `YouTube Data API v3` → **Enable**
 
-#### Step 3. Configure the OAuth Consent Screen
-1. On the left sidebar again, head to **OAuth consent screen** -> **Get Started**
-2. Fill in the app name (anything you want, e.g. `my-yt-uploader`), and user email
-3. In **Audience**, make sure to select **External** and not Internal
-4. Complete the rest of the page as is and agree to the privacy policy
+#### Step 3 - Configure the OAuth Consent Screen
+1. In the left sidebar, go to **APIs & Services** → **OAuth consent screen** → **Get Started**
+2. Fill in the app name (e.g. `my-yt-uploader`) and your user email
+3. Under **Audience**, select **External**
+4. Complete the remaining fields and agree to the policy
 
-#### Step 4. Create the OAuth credentials
-1. Open up the full left sidebar again, navigate to **APIs & Services** -> **Credentials**
-2. Select **+ Create credentials** -> **OAuth client ID**
-3. Make sure that the application type is **Desktop App**. Name it whatever you wish (e.g. `my-yt-uploader`)
-4. Click **Create** -> **Download JSON** - NOTE: This step is important! If you miss this step, you will have to recreate another client ID as you will only see this page once!
+#### Step 4 - Add yourself as a test user
+1. Still on the **OAuth consent screen** page, scroll down to the **Test users** section
+2. Click **+ Add Users** and add your Google account email
+3. Click **Save**
+
+> This step is required. While the app is in Testing status, only approved test users can complete the OAuth flow. Formal Google app verification is **not** required for self-hosted personal use - staying in Testing mode permanently is intentional and sufficient.
+
+#### Step 5 - Create the OAuth Credentials
+1. In the left sidebar, navigate to **APIs & Services** → **Credentials**
+2. Click **+ Create credentials** → **OAuth client ID**
+3. Set the application type to **Desktop App** and name it anything (e.g. `my-yt-uploader`)
+4. Click **Create**, then **Download JSON**
+
+> **Important:** Download the JSON immediately - this is the only time the download option is shown. If you miss it, you will need to delete and recreate the credential.
+
 5. Rename the downloaded file to `client_secret.json`
 
-#### Step 5. Place the credentials file
-Place the `client_secret.json` file inside the `auth/` folder at the root of this repository:
-```
-Docker-YT-Uploader/
-└── auth/
-    └── client_secret.json   <- your file goes here
-```
+#### Step 6 - Authenticate via the Web UI
+Once the app is running (see Docker Configuration below), navigate to it in your browser. If no credentials are detected, you will be automatically redirected to the setup page where you can:
+
+1. **Upload your `client_secret.json`** via drag-and-drop or the file browser
+2. **Click "Connect YouTube Account"** to be redirected to Google's OAuth consent screen
+3. Sign in and approve access - you will be redirected back to the app automatically
+
+A `tokens.json` file is saved to the `auth/` volume automatically. This only needs to be done once; tokens are refreshed automatically by the app going forward.
+
 > Note: `client_secret.json` and `tokens.json` are listed in `.gitignore` and will never be committed. Never share these files publicly.
 
-#### Step 6. Authenticate
-Run the CLI authentication script to generate your OAuth tokens:
-```
-node auth/authenticate.js
-```
-This will open a browser window asking you to sign in with your Google account and grant permission. Once approved, a `tokens.json` file will be saved to the `auth/` folder automatically.
-
-This only needs to be done once, as the tokens are refreshed automatically by this app.
+### 2. (OTHER STUFF THATS NECESSARY LATER)
 
 ---
 
@@ -66,7 +71,7 @@ This only needs to be done once, as the tokens are refreshed automatically by th
 At its core, Docker-YT-Uploader is a Docker container that:
 1. **Watches a configured folder** for new video files. This folder can be:
    - A local directory within the Linux host or VM
-   - An NFS-mounted share from another machine on the network (folder visibility should work the same either way)
+   - An NFS-mounted share from another machine on the network (folder visibility works the same either way)
 2. **Presents a web UI** (served via the container) where you can review detected videos, edit their metadata, and trigger or schedule uploads
 3. **Authenticates with YouTube** via OAuth 2.0, then uses the YouTube Data API v3 to upload videos directly from the watched folder
 4. **Tracks upload history** so you can see what has already been sent to your channel
@@ -81,22 +86,23 @@ The container is designed to run persistently alongside other services on a NAS 
 ---
 
 ## Features
-> Note: Features, be it planned or key are subject to change as the project evolves.
+> Note: Features, planned or otherwise, are subject to change as the project evolves.
 
 ### Key Features
 - **Web interface for metadata editing** - Title, description, tags, category, privacy, schedule
-- **Folder watch** - Files appearing in the configured watch folder are detected automatically and surfaced in the Web UI
+- **Folder watch** - Files appearing in the configured watch folder are detected automatically and surfaced in the web UI
 - **Upload history view** - Shows previously uploaded videos from your YouTube channel
 - **Sidecar JSON for metadata** - Optional `.meta.json` files per video for pre-filling metadata fields
 - **Thumbnail upload support** - Custom thumbnail selection and upload via the API
-- **In-browser upload notifications** - The web client notifies you when an upload completes, so you don't have to keep checking
+- **In-browser upload notifications** - The web client notifies you when an upload completes
+- **Browser-based OAuth setup** - Upload your `client_secret.json` and authenticate entirely through the web UI; no CLI or manual file placement required
 
 ### Planned Features
-These are on the roadmap, planned for a future release:
+These are on the roadmap for a future release:
 - **Upload progress indicator** - Live progress bar with estimated time remaining for active uploads
 - **Resumable uploads** - Leverages the YouTube Data API v3's resumable upload sessions, essential for large files where a mid-upload failure would otherwise require starting over
 - **Queue management** - Queue multiple videos, reorder them, pause, or cancel pending uploads
-- **Drag-and-drop upload** - Optionally drag and drop files directly into the Web UI (note: streaming multi-GB files through the browser requires careful handling)
+- **Drag-and-drop upload** - Optionally drag and drop video files directly into the web UI (note: streaming multi-GB files through the browser requires careful handling)
 - **Additional notification channels** - Beyond in-browser notifications, exploring options like webhooks or self-hosted push services (e.g. ntfy, Gotify) for truly headless setups
 
 ---
@@ -113,20 +119,3 @@ The YouTube Data API v3 has a default quota of **10,000 units per day**. Each vi
 
 ## Development Status
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
-
-This is what the overall project structure exist as:
-```
-Docker-YT-Uploader/
-├── app/                    <- Astro project for front-end
-│   ├── src/
-│   ├── public/
-│   ├── astro.config.mjs
-│   └── package.json
-├── uploads/                <- The watched folder (mounted as a volume later)
-├── Dockerfile
-├── docker-compose.yml
-├── .dockerignore
-└── README.md
-```
-
-Use this as the following template to understand where to put stuff as things go on, update project structure as project progresses.

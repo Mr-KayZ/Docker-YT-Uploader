@@ -1,3 +1,5 @@
+// This module sets up a file watcher on the /uploads directory to detect new video files added for upload. It uses the chokidar library to watch for file changes and maintains an in-memory list of currently watched files, which can be accessed via an API route.
+
 // Import libraries
 import chokidar from 'chokidar';
 import path from 'node:path';

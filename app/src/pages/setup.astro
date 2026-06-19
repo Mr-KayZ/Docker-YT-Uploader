@@ -1,0 +1,310 @@
+---
+import { hasClientSecret, hasTokens } from '../lib/auth';
+
+if (hasTokens()) {
+  return Astro.redirect('/');
+}
+
+const alreadyHasSecret = hasClientSecret();
+const errorParam = Astro.url.searchParams.get('error');
+
+const errorMessages: Record<string, string> = {
+  no_code:               'Google did not return an authorisation code. Please try again.',
+  token_exchange_failed: 'Failed to exchange the authorisation code for tokens. Please try again.',
+  access_denied:         'You denied access. Please try again and click "Allow".',
+};
+
+const errorMessage = errorParam ? (errorMessages[errorParam] ?? 'An unknown error occurred.') : null;
+---
+
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Setup - Docker-YT-Uploader</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+      body {
+        font-family: system-ui, sans-serif;
+        background: #f5f5f5;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      }
+      .card {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 480px;
+        width: 100%;
+        box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+      }
+      .logo { margin-bottom: 0.75rem; color: #1a1a1a; }
+      h1 { font-size: 1.25rem; margin-bottom: 0.25rem; }
+      .subtitle { color: #666; font-size: 0.9rem; margin-bottom: 1.5rem; }
+      .step {
+        border: 1px solid #e5e5e5;
+        border-radius: 8px;
+        padding: 1.25rem;
+        margin-bottom: 1rem;
+      }
+      .step-header {
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+        margin-bottom: 0.75rem;
+      }
+      .step-num {
+        background: #1a1a1a;
+        color: white;
+        width: 24px;
+        height: 24px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.75rem;
+        font-weight: 600;
+        flex-shrink: 0;
+      }
+      .step-num.done { background: #16a34a; }
+      .step-num svg { width: 12px; height: 12px; stroke: white; }
+      .step h2 { font-size: 0.95rem; font-weight: 600; }
+      .step p { font-size: 0.85rem; color: #555; line-height: 1.5; }
+      .step a { color: #2563eb; }
+
+      .drop-zone {
+        border: 2px dashed #d1d5db;
+        border-radius: 8px;
+        padding: 1.5rem;
+        text-align: center;
+        cursor: pointer;
+        transition: border-color 0.15s, background 0.15s;
+        margin-top: 0.75rem;
+      }
+      .drop-zone:hover, .drop-zone.dragover {
+        border-color: #2563eb;
+        background: #eff6ff;
+      }
+      .drop-zone.success {
+        border-color: #16a34a;
+        background: #f0fdf4;
+        cursor: default;
+      }
+      .drop-zone p { font-size: 0.85rem; color: #555; pointer-events: none; }
+      .drop-zone .drop-icon {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 0.5rem;
+        pointer-events: none;
+        color: #9ca3af;
+      }
+      .drop-zone.success .drop-icon { color: #16a34a; }
+      input[type="file"] { display: none; }
+
+      .btn {
+        display: block;
+        width: 100%;
+        padding: 0.75rem;
+        border-radius: 8px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        margin-top: 0.75rem;
+        text-align: center;
+        text-decoration: none;
+        transition: background 0.15s;
+      }
+      .btn-primary { background: #1a1a1a; color: white; }
+      .btn-primary:hover { background: #333; }
+      .btn-disabled { background: #9ca3af; color: white; pointer-events: none; }
+
+      .error-box {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+        background: #fef2f2;
+        border: 1px solid #fca5a5;
+        border-radius: 8px;
+        padding: 0.75rem 1rem;
+        font-size: 0.85rem;
+        color: #991b1b;
+        margin-bottom: 1rem;
+      }
+      .error-box svg { flex-shrink: 0; margin-top: 1px; }
+
+      .success-inline {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.85rem;
+        color: #15803d;
+      }
+      .success-inline svg { flex-shrink: 0; }
+
+      .status { font-size: 0.8rem; margin-top: 0.5rem; min-height: 1.2em; }
+      .status.ok { color: #16a34a; }
+      .status.err { color: #dc2626; }
+    </style>
+  </head>
+  <body>
+    <div class="card">
+
+      <div class="logo">
+        <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-label="Docker-YT-Uploader">
+          <rect width="32" height="32" rx="8" fill="#1a1a1a"/>
+          <polygon points="12,10 24,16 12,22" fill="white"/>
+        </svg>
+      </div>
+
+      <h1>Docker-YT-Uploader Setup</h1>
+      <p class="subtitle">Complete these steps to connect your YouTube account.</p>
+
+      {errorMessage && (
+        <div class="error-box">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          {errorMessage}
+        </div>
+      )}
+
+      <!-- Step 1 -->
+      <div class="step">
+        <div class="step-header">
+          <div class={`step-num ${alreadyHasSecret ? 'done' : ''}`}>
+            {alreadyHasSecret ? (
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 6 9 17 4 12"/>
+              </svg>
+            ) : '1'}
+          </div>
+          <h2>Upload Google OAuth credentials</h2>
+        </div>
+
+        {alreadyHasSecret ? (
+          <div class="success-inline">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 6 9 17 4 12"/>
+            </svg>
+            <span><code>client_secret.json</code> is already uploaded.</span>
+          </div>
+        ) : (
+          <>
+            <p>
+              Download your <code>client_secret.json</code> from{' '}
+              <a href="https://console.cloud.google.com/apis/credentials" target="_blank" rel="noopener">
+                Google Cloud Console
+              </a>{' '}
+              &rarr; Credentials &rarr; your OAuth 2.0 Client ID &rarr; Download JSON.
+            </p>
+            <div class="drop-zone" id="dropZone">
+              <div class="drop-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <polyline points="9 15 12 12 15 15"/>
+                </svg>
+              </div>
+              <p><strong>Drop client_secret.json here</strong><br />or click to browse</p>
+            </div>
+            <input type="file" id="fileInput" accept=".json" />
+            <div class="status" id="uploadStatus"></div>
+          </>
+        )}
+      </div>
+
+      <!-- Step 2 -->
+      <div class="step">
+        <div class="step-header">
+          <div class="step-num">2</div>
+          <h2>Connect your YouTube account</h2>
+        </div>
+        <p>Sign in with Google and grant permission to upload videos on your behalf.</p>
+        <a
+          href="/api/auth/start"
+          id="connectBtn"
+          class={`btn ${alreadyHasSecret ? 'btn-primary' : 'btn-disabled'}`}
+        >
+          Connect YouTube Account &rarr;
+        </a>
+      </div>
+    </div>
+
+    <script>
+      const dropZone   = document.getElementById('dropZone');
+      const fileInput  = document.getElementById('fileInput') as HTMLInputElement | null;
+      const statusEl   = document.getElementById('uploadStatus');
+      const connectBtn = document.getElementById('connectBtn');
+
+      dropZone?.addEventListener('click', () => fileInput?.click());
+
+      dropZone?.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.classList.add('dragover');
+      });
+      dropZone?.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+      dropZone?.addEventListener('drop', (e) => {
+        e.preventDefault();
+        dropZone.classList.remove('dragover');
+        const file = (e as DragEvent).dataTransfer?.files[0];
+        if (file) uploadFile(file);
+      });
+
+      fileInput?.addEventListener('change', () => {
+        const file = fileInput.files?.[0];
+        if (file) uploadFile(file);
+      });
+
+      async function uploadFile(file: File) {
+        if (!file.name.endsWith('.json')) {
+          setStatus('Please select a .json file.', 'err');
+          return;
+        }
+
+        setStatus('Uploading...', '');
+
+        const form = new FormData();
+        form.append('file', file);
+
+        try {
+          const res  = await fetch('/api/setup/upload', { method: 'POST', body: form });
+          const data = await res.json();
+
+          if (res.ok) {
+            setStatus('Credentials uploaded successfully.', 'ok');
+            if (dropZone) {
+              dropZone.classList.add('success');
+              dropZone.innerHTML = `
+                <div class="drop-icon">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 6 9 17 4 12"/>
+                  </svg>
+                </div>
+                <p><strong>client_secret.json uploaded</strong></p>
+              `;
+            }
+            if (connectBtn) {
+              connectBtn.classList.remove('btn-disabled');
+              connectBtn.classList.add('btn-primary');
+            }
+          } else {
+            setStatus(data.error ?? 'Upload failed.', 'err');
+          }
+        } catch {
+          setStatus('Upload failed. Check the server logs.', 'err');
+        }
+      }
+
+      function setStatus(msg: string, type: string) {
+        if (!statusEl) return;
+        statusEl.textContent = msg;
+        statusEl.className   = `status ${type}`;
+      }
+    </script>
+  </body>
+</html>

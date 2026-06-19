@@ -22,7 +22,8 @@ COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/package.json ./package.json
 
 # Create the uploads directory inside the container
-RUN mkdir -p /uploads
+RUN mkdir -p /uploads && chmod 777 /uploads && \
+    mkdir -p /auth && chmod 777 /auth
 
 # Expose the port
 EXPOSE 4321
