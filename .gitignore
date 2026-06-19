@@ -25,3 +25,5 @@ Thumbs.db
 .vscode/settings.json
 .idea/
 *.swp
+auth/client_secret.json
+auth/tokens.json
