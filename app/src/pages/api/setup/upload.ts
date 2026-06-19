@@ -1,6 +1,6 @@
+// app/src/pages/api/setup/upload.ts
 // This API route handles the upload of the client secret JSON file.
 
-// Import necessary modules and functions
 import type { APIRoute } from 'astro';
 import { saveClientSecret, hasClientSecret } from '../../../lib/auth';
 

@@ -1,6 +1,6 @@
+// app/src/middleware.ts
 // This middleware checks if the user is authenticated (i.e., has valid tokens) before allowing access to protected routes. If not authenticated, it redirects the user to the setup page. It also allows certain public routes to be accessed without authentication.
 
-// Import necessary modules and functions
 import { defineMiddleware } from 'astro:middleware';
 import { hasTokens, hasClientSecret } from './lib/auth';
 

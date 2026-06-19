@@ -1,12 +1,11 @@
+// app/src/lib/auth.ts
 // This module handles Google OAuth2 authentication for the YouTube Uploader app.
 
-//Import necessary modules and functions
 import { google } from 'googleapis';
 import { readFile, writeFile } from 'node:fs/promises';
 import { existsSync } from 'node:fs';
 import path from 'node:path';
 
-// Define constants for file paths and OAuth2 configuration
 const AUTH_DIR         = '/auth';
 const SECRET_PATH      = path.join(AUTH_DIR, 'client_secret.json');
 const TOKENS_PATH      = path.join(AUTH_DIR, 'tokens.json');
@@ -61,6 +60,7 @@ export async function saveTokens(tokens: object) {
   await writeFile(TOKENS_PATH, JSON.stringify(tokens, null, 2));
 }
 
+// Clear all authentication data (for testing or re-authentication purposes)
 export async function saveClientSecret(content: string) {
   // Validate it's a real Google credential file before saving
   const parsed = JSON.parse(content);

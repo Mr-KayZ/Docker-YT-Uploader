@@ -1,6 +1,6 @@
+// app/src/pages/api/auth/start.ts
 // This API route initiates the OAuth flow by redirecting the user to the Google authorization URL. It checks if the client secret is available, and if not, it redirects to the setup page.
 
-// Import necessary modules and functions
 import type { APIRoute } from 'astro';
 import { createOAuthClient, SCOPES, hasClientSecret } from '../../../lib/auth';
 

@@ -1,6 +1,6 @@
+// app/src/pages/api/auth/callback.ts
 // This API route handles the OAuth callback from Google after the user authorizes the app. It exchanges the authorization code for access tokens and saves them.
 
-// Import necessary modules and functions
 import type { APIRoute } from 'astro';
 import { createOAuthClient, saveTokens, hasClientSecret } from '../../../lib/auth';
 

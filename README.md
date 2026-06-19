@@ -119,3 +119,8 @@ The YouTube Data API v3 has a default quota of **10,000 units per day**. Each vi
 
 ## Development Status
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
+
+### Tests to run:
+- Check if this works fully as a solo Docker container
+- Create additional setup pages for setting mount points for folders (namely uploads (rename to videos) and auth)
+- Customize it better with astro - research more into UI stuff for these!
