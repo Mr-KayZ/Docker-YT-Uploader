@@ -125,7 +125,6 @@ The YouTube Data API v3 has a default quota of **10,000 units per day**. Each vi
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
 
 ### Roadmap:
-## Roadmap
 
 | Version | Milestone | Status |
 |---|---|---|
