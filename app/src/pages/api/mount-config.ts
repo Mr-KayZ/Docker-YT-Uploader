@@ -1,42 +1,52 @@
-// app/src/lib/api/mountConfig.ts
-// Persists user-defined mount path overrides to /data/mount-config.json.
-// paths.ts reads this file at startup; changes require a container restart to take effect.
+// app/src/pages/api/mount-config.ts
+// GET  /api/mount-config  — returns current active paths + whether they are user-overridden
+// POST /api/mount-config  — saves new paths to /data/mount-config.json
 
-import { readFile, writeFile, mkdir } from "node:fs/promises";
-import { existsSync } from "node:fs";
-import path from "node:path";
+import type { APIRoute } from "astro";
+import { VIDEOS_DIR, AUTH_DIR, DATA_DIR } from "../../lib/paths.js";
+import { loadMountConfig, saveMountConfig } from "../../lib/mountConfig.js";
 
-// DATA_DIR itself can't come from the file we're configuring, so read it from
-// the env/default directly - this is the one path that must stay hardcoded.
-const DATA_DIR = process.env.DATA_DIR ?? path.resolve(process.cwd(), "../data");
-const CONFIG_PATH = path.join(DATA_DIR, "mount-config.json");
+export const GET: APIRoute = async () => {
+  const saved = await loadMountConfig();
+  return new Response(
+    JSON.stringify({
+      active: { videosDir: VIDEOS_DIR, authDir: AUTH_DIR, dataDir: DATA_DIR },
+      saved,
+    }),
+    { status: 200, headers: { "Content-Type": "application/json" } },
+  );
+};
 
-export interface MountConfig {
-  videosDir?: string; // Override for the watched video folder
-  authDir?: string; // Override for the auth credential folder
-  dataDir?: string; // Override for the data/state folder
-}
-
-export async function loadMountConfig(): Promise<MountConfig> {
-  if (!existsSync(CONFIG_PATH)) return {};
+export const POST: APIRoute = async ({ request }) => {
   try {
-    const raw = await readFile(CONFIG_PATH, "utf-8");
-    return JSON.parse(raw) as MountConfig;
-  } catch {
-    return {};
+    const body = (await request.json()) as {
+      videosDir?: string;
+      authDir?: string;
+      dataDir?: string;
+    };
+
+    // Strip empty strings — treat blank submission as "use default"
+    const config = {
+      videosDir: body.videosDir?.trim() || undefined,
+      authDir:   body.authDir?.trim()   || undefined,
+      dataDir:   body.dataDir?.trim()   || undefined,
+    };
+
+    await saveMountConfig(config);
+
+    return new Response(
+      JSON.stringify({
+        ok: true,
+        message: "Mount config saved. Restart the container for changes to take effect.",
+        saved: config,
+      }),
+      { status: 200, headers: { "Content-Type": "application/json" } },
+    );
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : "Unknown error";
+    return new Response(JSON.stringify({ ok: false, error: msg }), {
+      status: 400,
+      headers: { "Content-Type": "application/json" },
+    });
   }
-}
-
-export async function saveMountConfig(config: MountConfig): Promise<void> {
-  // Validate: paths must be absolute
-  for (const [key, val] of Object.entries(config)) {
-    if (val !== undefined && !path.isAbsolute(val as string)) {
-      throw new Error(`${key} must be an absolute path (got: "${val}")`);
-    }
-  }
-
-  // Ensure /data exists on first run (fresh container before scheduler has started)
-  await mkdir(DATA_DIR, { recursive: true });
-
-  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), "utf-8");
-}
+};
