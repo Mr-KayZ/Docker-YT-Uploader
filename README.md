@@ -167,17 +167,18 @@ This is a solo project currently in very early development. Features will be imp
 | 0.6.0 | Cross-file integration fixes, route corrections, server init hooks | Complete |
 | 0.7.0 | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | Complete |
 | 0.8.0 | Sidecar `.meta.json` support - auto-fill metadata form from file | Complete |
-| 0.9.0 | Resumable uploads + live upload progress indicator + spinner | In Progress |
-| 0.9.1 | Upload info panel - progress bar, upload speed, quota usage | Planned |
-| 0.9.2 | In-browser notifications - toast on completion + bell popover with history | Planned |
-| 0.9.3 | Upload complete toast - video title + YouTube link + dismiss button | Planned |
-| 0.9.4 | Queue management - reorder, pause, cancel pending uploads | Planned |
-| 0.9.5 | Playlist support - pull channel playlists, assign at upload time | Planned |
-| 0.9.6 | Docker log viewer - dedicated page for live container console output | Planned |
-| 0.9.7 | Mount point configuration - setup UI for watched folder and auth directory | Planned |
+| 0.9.0 | Mount point configuration - setup UI for watched folder and auth directory | In Progress |
+| 0.9.1 | Resumable uploads + live upload progress indicator + spinner | Planned |
+| 0.9.2 | Upload info panel - progress bar, upload speed, quota usage | Planned |
+| 0.9.3 | In-browser notifications - toast on completion + bell popover with history | Planned |
+| 0.9.4 | Upload complete toast - video title + YouTube link + dismiss button | Planned |
+| 0.9.5 | Queue management - reorder, pause, cancel pending uploads | Planned |
+| 0.9.6 | Playlist support - pull channel playlists, assign at upload time | Planned |
+| 0.9.7 | Docker log viewer - dedicated page for live container console output | Planned |
 | 0.9.8 | Additional notification channels - webhooks, ntfy, Gotify | Planned |
 | 0.9.9 | Drag-and-drop video upload directly into the web UI | Planned |
-| 1.0.0 | All key and planned features complete; all bugs fixed (see Fixes to Implement); end-to-end Docker tested | Target |
+| 0.9.9 | Final bug fixing round (see Fixes to Implement) and testing | Planned |
+| 1.0.0 | All key and planned features complete; end-to-end Docker tested | Target |
 
 ### Fixes to Implement
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
