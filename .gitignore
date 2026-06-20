@@ -14,6 +14,14 @@ dist/
 videos/*
 !videos/.gitkeep
 
+# Auth folder contents (mount this as a volume, don't track files)
+auth/client_secret.json
+auth/tokens.json
+
+# Data folder
+data/*
+!data/.gitkeep
+
 # Docker
 *.log
 
@@ -25,6 +33,6 @@ Thumbs.db
 .vscode/settings.json
 .idea/
 *.swp
-auth/client_secret.json
-auth/tokens.json
+
+# Testing directory - Not for production
 Docker-YT-Test-media/*

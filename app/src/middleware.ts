@@ -2,7 +2,7 @@
 // This middleware checks if the user is authenticated (i.e., has valid tokens) before allowing access to protected routes. If not authenticated, it redirects the user to the setup page. It also allows certain public routes to be accessed without authentication.
 
 import { defineMiddleware } from "astro:middleware";
-import { hasTokens, hasClientSecret } from "./lib/auth.ts";
+import { hasTokens, hasClientSecret } from "./lib/auth.js";
 
 // Routes that are always accessible regardless of auth state
 const PUBLIC_PATHS = [
@@ -10,6 +10,7 @@ const PUBLIC_PATHS = [
   "/api/setup/credentials",
   "/api/auth/start",
   "/api/auth/callback",
+  "/api/mount-config",
 ];
 
 // Define the middleware function to check authentication
@@ -22,11 +23,8 @@ export const onRequest = defineMiddleware(async (context, next) => {
   }
 
   // Redirect to setup if not authenticated
-  if (!hasTokens()) {
-    return new Response(null, {
-      status: 302,
-      headers: { Location: "/setup" },
-    });
+  if (!hasClientSecret() || !hasTokens()) {
+    return new Response(null, { status: 302, headers: { Location: "/setup" } });
   }
 
   return next();

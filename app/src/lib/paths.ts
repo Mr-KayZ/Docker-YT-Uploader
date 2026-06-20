@@ -7,6 +7,7 @@
 
 import path from 'node:path';
 import { existsSync, readFileSync } from 'node:fs';
+import type { MountConfig } from './mountConfig.js';
 
 // DATA_DIR has no override layer - it's always env-var or default.
 export const DATA_DIR =
@@ -14,7 +15,7 @@ export const DATA_DIR =
 
 // Load user config synchronously at module init (startup cost is negligible).
 const CONFIG_PATH = path.join(DATA_DIR, 'mount-config.json');
-let userConfig: { videosDir?: string; authDir?: string } = {};
+let userConfig: MountConfig = {};
 
 if (existsSync(CONFIG_PATH)) {
   try {

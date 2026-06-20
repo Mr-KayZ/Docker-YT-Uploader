@@ -7,12 +7,10 @@ import {
   saveClientSecret,
   createOAuthClient,
   saveTokens,
-  getAuthenticatedClient, // ← add here, remove dynamic import below
+  getAuthenticatedClient,
   SCOPES,
 } from "../lib/auth.ts";
 
-// Determine current setup state
-//-------------------------------------------------------------------------------------------------
 const clientSecretExists = hasClientSecret();
 const tokensExist = hasTokens();
 
@@ -20,7 +18,7 @@ let channelName: string | null = null;
 if (clientSecretExists && tokensExist) {
   try {
     const { google } = await import("googleapis");
-    const client = await getAuthenticatedClient(); // ← no double import
+    const client = await getAuthenticatedClient();
     const yt = google.youtube({ version: "v3", auth: client });
     const res = await yt.channels.list({ part: ["snippet"], mine: true });
     channelName = res.data.items?.[0]?.snippet?.title ?? null;
@@ -29,8 +27,6 @@ if (clientSecretExists && tokensExist) {
   }
 }
 
-// Handle OAuth callback (code exchange)
-//-------------------------------------------------------------------------------------------------
 if (Astro.request.method === "GET") {
   const code = new URL(Astro.request.url).searchParams.get("code");
   if (code) {
@@ -41,8 +37,6 @@ if (Astro.request.method === "GET") {
   }
 }
 
-// Handle POST (client_secret upload)
-//-------------------------------------------------------------------------------------------------
 let uploadError: string | null = null;
 if (Astro.request.method === "POST") {
   try {
@@ -56,8 +50,6 @@ if (Astro.request.method === "POST") {
   }
 }
 
-// Build Google OAuth URL (if secret exists but no tokens yet)
-//-------------------------------------------------------------------------------------------------
 let authUrl: string | null = null;
 if (clientSecretExists) {
   try {
@@ -69,47 +61,76 @@ if (clientSecretExists) {
     });
   } catch {
     authUrl = null;
-  } // ← guard the URL generation too
+  }
 }
+
+// Both panels complete = proceed button active
+const setupComplete = clientSecretExists && tokensExist;
 ---
 
 <AppLayout title="Setup - Docker-YT-Uploader">
   <style>
-    /* setup-specific styles - anything not already in global.css */
     main {
       min-height: calc(100vh - 53px);
       display: flex;
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 1.25rem;
       padding: 2rem 1rem;
+      gap: 1.5rem;
     }
 
-    /* Shared card shell */
+    /* ── Page header (above both panels) ── */
+    .page-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      width: 100%;
+      max-width: 980px;
+    }
+    .page-header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #1a1a1a;
+    }
+
+    /* ── Two-panel row ── */
+    .panels {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.25rem;
+      width: 100%;
+      max-width: 980px;
+      align-items: start;
+    }
+    @media (max-width: 700px) {
+      .panels {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    /* ── Shared card ── */
     .setup-card {
       background: white;
       border: 1px solid #e5e5e5;
       border-radius: 12px;
-      padding: 2rem;
-      width: 100%;
-      max-width: 480px;
+      padding: 1.75rem;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
-
-    /* Mount config card */
-    .mount-card-title {
+    .card-title {
       font-size: 0.95rem;
       font-weight: 600;
       color: #1a1a1a;
       margin-bottom: 0.25rem;
     }
-    .mount-card-desc {
+    .card-desc {
       font-size: 0.82rem;
       color: #666;
-      margin-bottom: 1.25rem;
       line-height: 1.5;
+      margin-bottom: 1.25rem;
     }
+
+    /* ── Mount panel ── */
     .mount-field {
       margin-bottom: 1rem;
     }
@@ -135,7 +156,7 @@ if (clientSecretExists) {
       border-color: #1a1a1a;
       box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
     }
-    .mount-field .field-hint {
+    .field-hint {
       font-size: 0.75rem;
       color: #999;
       margin-top: 0.3rem;
@@ -144,18 +165,25 @@ if (clientSecretExists) {
       font-weight: 400;
       color: #aaa;
     }
+
     .mount-actions {
       display: flex;
       gap: 0.75rem;
       justify-content: flex-end;
       margin-top: 1.25rem;
     }
+    /* shrink the buttons in this context so they don't go full-width */
+    .mount-actions .btn {
+      width: auto;
+      padding: 0.55rem 1.1rem;
+    }
+
     .mount-status {
       font-size: 0.82rem;
       padding: 0.5rem 0.75rem;
       border-radius: 6px;
       margin-top: 0.75rem;
-      display: none; /* shown by JS */
+      display: none;
     }
     .mount-status.success {
       background: #f0fdf4;
@@ -175,6 +203,7 @@ if (clientSecretExists) {
       border: 1px solid #bfdbfe;
       display: block;
     }
+
     .active-paths {
       margin-top: 1rem;
       padding: 0.75rem 1rem;
@@ -210,24 +239,13 @@ if (clientSecretExists) {
       word-break: break-all;
     }
 
-    /* OAuth wizard card */
-    .setup-card header {
-      border: none;
-      padding: 0;
-      margin-bottom: 1.5rem;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-    }
-    .setup-card header h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #1a1a1a;
-    }
+    /* ── OAuth wizard panel ── */
     .progress-steps {
       display: flex;
-      align-items: center;
+      flex-direction: row; /* explicit - never collapse to column */
+      align-items: flex-start;
       margin-bottom: 1.75rem;
+      overflow: hidden;
     }
     .progress-step {
       display: flex;
@@ -236,13 +254,14 @@ if (clientSecretExists) {
       gap: 0.35rem;
       flex: 1;
       position: relative;
+      min-width: 0;
     }
     .progress-step:not(:last-child)::after {
       content: "";
       position: absolute;
-      top: 14px;
-      left: 50%;
-      width: 100%;
+      top: 13px;
+      left: calc(50% + 14px); /* start after the dot */
+      right: calc(-50% + 14px); /* end before the next dot */
       height: 1px;
       background: #e5e5e5;
       z-index: 0;
@@ -264,6 +283,7 @@ if (clientSecretExists) {
       color: #aaa;
       position: relative;
       z-index: 1;
+      flex-shrink: 0;
     }
     .progress-step.done .step-dot {
       background: #1a1a1a;
@@ -278,6 +298,7 @@ if (clientSecretExists) {
       font-size: 0.7rem;
       color: #aaa;
       text-align: center;
+      white-space: nowrap;
     }
     .progress-step.done .step-label {
       color: #1a1a1a;
@@ -335,211 +356,263 @@ if (clientSecretExists) {
       text-decoration: underline;
       cursor: pointer;
     }
+
+    /* ── Proceed button (below both panels) ── */
+    .proceed-wrap {
+      width: 100%;
+      max-width: 980px;
+      display: flex;
+      justify-content: center;
+    }
+    .btn-proceed {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      padding: 0.8rem 2.5rem;
+      border-radius: 8px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      text-decoration: none;
+      border: none;
+      cursor: pointer;
+      background: #1a1a1a;
+      color: white;
+      transition:
+        background 0.15s,
+        opacity 0.15s;
+    }
+    .btn-proceed:hover:not([aria-disabled="true"]) {
+      background: #333;
+    }
+    .btn-proceed[aria-disabled="true"] {
+      background: #d1d5db;
+      color: #9ca3af;
+      cursor: not-allowed;
+      pointer-events: none;
+    }
   </style>
 
-  <!-- Setup card - identical logic and markup to before, now inside AppLayout -->
   <main>
-    <!---- Mount Point Configuration (always visible, above the OAuth wizard) ---->
-    <div class="setup-card">
-      <p class="mount-card-title">Mount Points</p>
-      <p class="mount-card-desc">
-        Configure the folders the app watches for videos and stores credentials
-        in. Changes take effect after restarting the container.
-      </p>
+    <!-- Page header -->
+    <div class="page-header">
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 32 32"
+        fill="none"
+        aria-label="Docker-YT-Uploader"
+      >
+        <rect width="32" height="32" rx="8" fill="#1a1a1a"></rect>
+        <polygon points="12,10 24,16 12,22" fill="white"></polygon>
+      </svg>
+      <h1>Docker-YT-Uploader</h1>
+    </div>
 
-      <div class="mount-field">
-        <label for="videosDir">
-          Videos folder <span class="optional">(watched for new uploads)</span>
-        </label>
-        <input
-          type="text"
-          id="videosDir"
-          placeholder="Loading…"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <p class="field-hint">
-          Absolute path inside the container, e.g. <code>/videos</code>
+    <!-- Two-panel row -->
+    <div class="panels">
+      <!-- LEFT: Mount Points -->
+      <div class="setup-card">
+        <p class="card-title">Mount Points</p>
+        <p class="card-desc">
+          Configure the folders the app watches for videos and stores
+          credentials in. Changes take effect after restarting the container.
         </p>
-      </div>
 
-      <div class="mount-field">
-        <label for="authDir">
-          Auth folder <span class="optional"
-            >(stores client_secret.json &amp; tokens.json)</span
+        <div class="mount-field">
+          <label for="videosDir">
+            Videos folder <span class="optional">(watched for new uploads)</span
+            >
+          </label>
+          <input
+            type="text"
+            id="videosDir"
+            placeholder="Loading…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <p class="field-hint">e.g. <code>/videos</code></p>
+        </div>
+
+        <div class="mount-field">
+          <label for="authDir">
+            Auth folder <span class="optional"
+              >(stores credentials &amp; tokens)</span
+            >
+          </label>
+          <input
+            type="text"
+            id="authDir"
+            placeholder="Loading…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <p class="field-hint">e.g. <code>/auth</code></p>
+        </div>
+
+        <div class="mount-status" id="mountStatus"></div>
+
+        <div class="mount-actions">
+          <button class="btn btn-secondary" id="mountResetBtn"
+            >Reset to defaults</button
           >
-        </label>
-        <input
-          type="text"
-          id="authDir"
-          placeholder="Loading…"
-          autocomplete="off"
-          spellcheck="false"
-        />
-        <p class="field-hint">
-          Absolute path inside the container, e.g. <code>/auth</code>
-        </p>
+          <button class="btn btn-primary" id="mountSaveBtn">Save paths</button>
+        </div>
+
+        <div class="active-paths">
+          <p class="active-paths-label">Currently active (restart to update)</p>
+          <div class="path-row">
+            <span class="path-label">Videos</span><code id="activeVideos"
+              >-</code>
+          </div>
+          <div class="path-row">
+            <span class="path-label">Auth</span>
+            <code id="activeAuth">-</code>
+          </div>
+          <div class="path-row">
+            <span class="path-label">Data</span>
+            <code id="activeData">-</code>
+          </div>
+        </div>
       </div>
 
-      <div class="mount-status" id="mountStatus"></div>
+      <!-- RIGHT: OAuth Wizard -->
+      <div class="setup-card">
+        <!-- Progress indicator -->
+        <div class="progress-steps">
+          <div
+            class={`progress-step ${clientSecretExists ? "done" : "active"}`}
+          >
+            <div class="step-dot">{clientSecretExists ? "✓" : "1"}</div>
+            <span class="step-label">Credentials</span>
+          </div>
+          <div
+            class={`progress-step ${tokensExist ? "done" : clientSecretExists ? "active" : ""}`}
+          >
+            <div class="step-dot">{tokensExist ? "✓" : "2"}</div>
+            <span class="step-label">Authenticate</span>
+          </div>
+          <div class={`progress-step ${tokensExist ? "done" : ""}`}>
+            <div class="step-dot">{tokensExist ? "✓" : "3"}</div>
+            <span class="step-label">Ready</span>
+          </div>
+        </div>
 
-      <div class="mount-actions">
-        <button class="btn btn-secondary" id="mountResetBtn"
-          >Reset to defaults</button
-        >
-        <button class="btn btn-primary" id="mountSaveBtn">Save paths</button>
-      </div>
+        {uploadError && <div class="error-msg">⚠ {uploadError}</div>}
 
-      <div class="active-paths">
-        <p class="active-paths-label">Currently active (restart to update)</p>
-        <div class="path-row">
-          <span class="path-label">Videos</span><code id="activeVideos">—</code>
-        </div>
-        <div class="path-row">
-          <span class="path-label">Auth</span>
-          <code id="activeAuth">—</code>
-        </div>
-        <div class="path-row">
-          <span class="path-label">Data</span>
-          <code id="activeData">—</code>
-        </div>
+        <!-- Step 1 -->
+        {
+          !clientSecretExists && (
+            <div>
+              <p class="section-title">Upload your credentials</p>
+              <p class="section-desc">
+                Download your <code>client_secret.json</code> from Google Cloud
+                Console, then upload it here to get started.
+              </p>
+              <form method="POST" enctype="multipart/form-data">
+                <div class="drop-zone" id="setupDropZone">
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="#9ca3af"
+                    stroke-width="1.5"
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    style="margin:0 auto 0.4rem"
+                  >
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="17 8 12 3 7 8" />
+                    <line x1="12" y1="3" x2="12" y2="15" />
+                  </svg>
+                  <p>
+                    <strong>Drop client_secret.json here</strong> or click to
+                    browse
+                  </p>
+                  <p class="drop-hint">
+                    Must be a valid Google OAuth2 credential file.
+                  </p>
+                </div>
+                <input
+                  type="file"
+                  id="setupFileInput"
+                  name="clientSecret"
+                  accept=".json"
+                  style="display:none"
+                />
+                <button
+                  class="btn btn-primary"
+                  type="submit"
+                  id="setupSubmitBtn"
+                  style="margin-top:1rem"
+                  disabled
+                >
+                  Upload Credentials
+                </button>
+              </form>
+            </div>
+          )
+        }
+
+        <!-- Step 2 -->
+        {
+          clientSecretExists && !tokensExist && authUrl && (
+            <div>
+              <div class="success-badge">✓ Credentials uploaded</div>
+              <hr class="divider" />
+              <p class="section-title">Connect your YouTube account</p>
+              <p class="section-desc">
+                Click below to sign in with Google and grant access to your
+                YouTube channel. You'll be redirected back automatically.
+              </p>
+              <a class="btn btn-primary" href={authUrl}>
+                Connect YouTube Account
+              </a>
+            </div>
+          )
+        }
+
+        <!-- Step 3 -->
+        {
+          clientSecretExists && tokensExist && (
+            <div>
+              <div class="success-badge">✓ All set</div>
+              <p class="section-title">
+                You're authenticated{channelName ? ` as ${channelName}` : ""}!
+              </p>
+              <p class="section-desc">
+                Your credentials and tokens are stored. The app will refresh
+                tokens automatically.
+              </p>
+              {authUrl && (
+                <a class="re-auth-link" href={authUrl}>
+                  Re-authenticate with a different account
+                </a>
+              )}
+            </div>
+          )
+        }
       </div>
     </div>
 
-    <!---- OAuth Wizard ---->
-    <div class="setup-card">
-      <header>
-        <svg
-          width="28"
-          height="28"
-          viewBox="0 0 32 32"
-          fill="none"
-          aria-label="Docker-YT-Uploader"
-        >
-          <rect width="32" height="32" rx="8" fill="#1a1a1a"></rect>
-          <polygon points="12,10 24,16 12,22" fill="white"></polygon>
-        </svg>
-        <h1>Docker-YT-Uploader</h1>
-      </header>
-
-      <!-- Progress indicator -->
-      <div class={`progress-step ${clientSecretExists ? "done" : "active"}`}>
-        <div class="step-dot">{clientSecretExists ? "✓" : "1"}</div>
-        <span class="step-label">Credentials</span>
-      </div>
-      <div
-        class={`progress-step ${tokensExist ? "done" : clientSecretExists ? "active" : ""}`}
+    <!-- Proceed button (below both panels) -->
+    <div class="proceed-wrap">
+      <a
+        href="/"
+        class="btn-proceed"
+        aria-disabled={setupComplete ? "false" : "true"}
+        title={setupComplete
+          ? "Go to uploader"
+          : "Complete both panels above to proceed"}
       >
-        <div class="step-dot">{tokensExist ? "✓" : "2"}</div>
-        <span class="step-label">Authenticate</span>
-      </div>
-      <!-- Step 3: done when complete, no "active" — it's the terminal step -->
-      <div class={`progress-step ${tokensExist ? "done" : ""}`}>
-        <div class="step-dot">{tokensExist ? "✓" : "3"}</div>
-        <span class="step-label">Ready</span>
-      </div>
-
-      {uploadError && <div class="error-msg">⚠ {uploadError}</div>}
-
-      <!-- Step 1: Upload client_secret.json -->
-      {
-        !clientSecretExists && (
-          <div>
-            <p class="section-title">Upload your credentials</p>
-            <p class="section-desc">
-              Download your <code>client_secret.json</code> from Google Cloud
-              Console, then upload it here to get started.
-            </p>
-            <form method="POST" enctype="multipart/form-data">
-              <div class="drop-zone" id="setupDropZone">
-                <svg
-                  width="24"
-                  height="24"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="#9ca3af"
-                  stroke-width="1.5"
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  style="margin:0 auto 0.4rem"
-                >
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                  <polyline points="17 8 12 3 7 8" />
-                  <line x1="12" y1="3" x2="12" y2="15" />
-                </svg>
-                <p>
-                  <strong>Drop client_secret.json here</strong> or click to
-                  browse
-                </p>
-                <p class="drop-hint">
-                  Must be a valid Google OAuth2 credential file.
-                </p>
-              </div>
-              <input
-                type="file"
-                id="setupFileInput"
-                name="clientSecret"
-                accept=".json"
-                style="display:none"
-              />
-              <button
-                class="btn btn-primary"
-                type="submit"
-                id="setupSubmitBtn"
-                style="margin-top:1rem"
-                disabled
-              >
-                Upload Credentials
-              </button>
-            </form>
-          </div>
-        )
-      }
-
-      <!-- Step 2: Connect YouTube account -->
-      {
-        clientSecretExists && !tokensExist && authUrl && (
-          <div>
-            <div class="success-badge">✓ Credentials uploaded</div>
-            <hr class="divider" />
-            <p class="section-title">Connect your YouTube account</p>
-            <p class="section-desc">...</p>
-            <a class="btn btn-primary" href={authUrl}>
-              Connect YouTube Account
-            </a>
-          </div>
-        )
-      }
-
-      <!-- Step 3: Ready -->
-      {
-        clientSecretExists && tokensExist && (
-          <div>
-            <div class="success-badge">✓ All set</div>
-            <p class="section-title">
-              You're authenticated{channelName ? ` as ${channelName}` : ""}!
-            </p>
-            <p class="section-desc">
-              Your credentials and tokens are stored. The app will refresh
-              tokens automatically.
-            </p>
-            <a class="btn btn-primary" href="/">
-              Go to Dashboard
-            </a>
-            {authUrl && (
-              <a class="re-auth-link" href={authUrl}>
-                Re-authenticate with a different account
-              </a>
-            )}
-          </div>
-        )
-      }
+        Proceed to Uploader
+      </a>
     </div>
   </main>
 
   <script>
     // Mount config
-    //---------------------------------------------------------------------------------------------
     const videosInput = document.getElementById(
       "videosDir",
     ) as HTMLInputElement;
@@ -563,6 +636,7 @@ if (clientSecretExists) {
     async function loadMountConfig() {
       try {
         const res = await fetch("/api/mount-config");
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data = await res.json();
         videosInput.value = data.saved?.videosDir ?? "";
         authInput.value = data.saved?.authDir ?? "";
@@ -571,8 +645,8 @@ if (clientSecretExists) {
         activeVideos.textContent = data.active.videosDir;
         activeAuth.textContent = data.active.authDir;
         activeData.textContent = data.active.dataDir;
-      } catch {
-        showMountStatus("Failed to load current mount configuration.", "error");
+      } catch (err) {
+        showMountStatus("Failed to load mount configuration.", "error");
       }
     }
 
@@ -588,26 +662,24 @@ if (clientSecretExists) {
           }),
         });
         const data = await res.json();
-        if (data.ok)
+        if (data.ok) {
           showMountStatus(
-            "✓ Saved. Restart the container to apply the new paths.",
+            "✓ Saved. Restart the container to apply.",
             "success",
           );
-        else showMountStatus(`Error: ${data.error}`, "error");
+          await loadMountConfig();
+        } else {
+          showMountStatus(`Error: ${data.error}`, "error");
+        }
       } catch {
-        showMountStatus("Failed to save — check the server logs.", "error");
+        showMountStatus("Failed to save - check the server logs.", "error");
       } finally {
         mountSaveBtn.disabled = false;
       }
     });
 
     mountResetBtn.addEventListener("click", async () => {
-      if (
-        !confirm(
-          "Reset both paths to their defaults (env vars or built-in fallbacks)?",
-        )
-      )
-        return;
+      if (!confirm("Reset both paths to defaults?")) return;
       videosInput.value = "";
       authInput.value = "";
       try {
@@ -622,17 +694,16 @@ if (clientSecretExists) {
             "✓ Reset to defaults. Restart the container to apply.",
             "success",
           );
-          await loadMountConfig(); // ← refresh displayed active paths
+          await loadMountConfig();
         }
       } catch {
-        showMountStatus("Reset failed — check the server logs.", "error");
+        showMountStatus("Reset failed - check the server logs.", "error");
       }
     });
 
     loadMountConfig();
 
-    // Credential drop zone
-    //---------------------------------------------------------------------------------------------
+    // Drop zone
     const zone = document.getElementById("setupDropZone");
     const fileInput = document.getElementById(
       "setupFileInput",

@@ -187,3 +187,4 @@ These are outstanding structural and UX improvements that don't map to a specifi
 - **Upload complete toast notification** - On successful upload, show a green toast (with darker green border and a dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should also appear in the bell icon popover
 - **Tooltips** - Enable tooltip support across the UI; icon buttons in the header (bell, logs) should show a tooltip on hover describing their function
 - **Add tags** for some videos, such as if a video has a META file, it should show up as a neat little tag on the side of the video instead of being embedded in text.
+- **Have a back button on the UI** on the top left perhaps? Allows the user to go back to the setup page.
