@@ -1,4 +1,4 @@
-# Docker-YT-Uploader: Ver. 0.7.0
+# Docker-YT-Uploader: Ver. 0.8.0
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
 ## Use Case
@@ -112,7 +112,38 @@ These are on the roadmap for a future release:
 ---
 
 ## Docker Configuration
-> Note: Volume mounts, port mappings, resource limits, and the `.meta.json` schema will be documented here as the project matures. These details are subject to change during early development.
+
+> Note: Volume mounts, port mappings, and resource limits will be documented here as the project matures. These details are subject to change during early development.
+
+### Sidecar Metadata (`.meta.json`)
+
+When a video is dropped into the `/videos` folder, the app will also look for a companion `.meta.json` file in the same directory with the same base name (e.g. `my-video.mp4` → `my-video.meta.json`). If found, its contents are used to pre-fill the upload form fields automatically.
+
+All fields are optional - any field omitted will simply leave the corresponding form field at its default value.
+
+```json
+{
+  "title": "My Awesome Video",
+  "description": "A full description for YouTube.\nNewlines are supported.",
+  "tags": ["gaming", "tutorial", "walkthrough"],
+  "privacy": "public",
+  "categoryId": "20",
+  "language": "en",
+  "audience": "general"
+}
+```
+
+| Field | Type | Accepted values |
+|---|---|---|
+| `title` | `string` | Any text, max 100 characters |
+| `description` | `string` | Any text, max 5000 characters |
+| `tags` | `string[]` | Array of strings, 500 characters total across all tags |
+| `privacy` | `string` | `"public"`, `"private"`, `"unlisted"` |
+| `categoryId` | `string` | YouTube numeric category ID (e.g. `"20"` = Gaming, `"22"` = People & Blogs) |
+| `language` | `string` | BCP-47 code (e.g. `"en"`, `"fr"`, `"ja"`) |
+| `audience` | `string` | `"general"`, `"kids"`, `"age_restricted"` |
+
+Files that have a recognised sidecar are marked with a **META** badge in the file panel. Invalid or malformed `.meta.json` files are silently ignored and the form remains blank.
 
 ---
 
@@ -158,3 +189,4 @@ These are outstanding structural and UX improvements that don't map to a specifi
 - **Selected file highlight** - The active file in the left panel should darken slightly and show a rounded border to make the selection state unambiguous
 - **Upload complete toast notification** - On successful upload, show a green toast (with darker green border and a dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should also appear in the bell icon popover
 - **Tooltips** - Enable tooltip support across the UI; icon buttons in the header (bell, logs) should show a tooltip on hover describing their function
+- **Add tags** for some videos, such as if a video has a META file, it should show up as a neat little tag on the side of the video instead of being embedded in text.
