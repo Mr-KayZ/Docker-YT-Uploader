@@ -1,7 +1,7 @@
 ---
 // app/src/components/FilePanel.astro
-// Left pane: upload queue file list shell.
-// The file list contents are injected at runtime by the polling script in index.astro.
+// Left pane: video file list shell.
+// File list contents are injected at runtime by the polling script in index.astro.
 ---
 
 <aside class="panel-left">
@@ -11,7 +11,9 @@
   </div>
   <div class="file-list" id="fileList">
     <div class="file-empty">
-      <p>No video files detected.<br/>Drop a file into <code>/videos</code>.</p>
+      <p>
+        No video files detected.<br />Drop a file into <code>/videos</code>.
+      </p>
     </div>
   </div>
 </aside>
@@ -69,17 +71,30 @@
     border-radius: 8px;
     cursor: pointer;
     border: 1.5px solid transparent;
-    transition: background 0.1s, border-color 0.1s;
+    transition:
+      background 0.1s,
+      border-color 0.1s;
     margin-bottom: 0.25rem;
   }
-  .file-item:hover { background: #f9f9f9; }
+  .file-item:hover {
+    background: #f9f9f9;
+  }
   .file-item.selected {
     background: #e8e8e8;
     border-color: #b0b0b0;
   }
-  .file-item.queued    { opacity: 0.5; pointer-events: none; }
-  .file-item.uploading { border-color: #2563eb; background: #eff6ff; }
-  .file-item.done      { opacity: 0.5; pointer-events: none; }
+  .file-item.queued {
+    opacity: 0.5;
+    pointer-events: none;
+  }
+  .file-item.uploading {
+    border-color: #2563eb;
+    background: #eff6ff;
+  }
+  .file-item.done {
+    opacity: 0.5;
+    pointer-events: none;
+  }
 
   .file-icon {
     width: 36px;
@@ -92,7 +107,15 @@
     flex-shrink: 0;
     color: #888;
   }
-  .file-info { min-width: 0; flex: 1; }
+  .file-info {
+    min-width: 0;
+    flex: 1;
+  }
+  .file-name-row {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
   .file-name {
     font-size: 0.85rem;
     font-weight: 500;
@@ -100,6 +123,19 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    min-width: 0;
+  }
+  .meta-badge {
+    flex-shrink: 0;
+    font-size: 0.6rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    background: #dbeafe;
+    color: #1d4ed8;
+    padding: 0.1rem 0.35rem;
+    border-radius: 4px;
+    line-height: 1.4;
+    title: ".meta.json found - form will be pre-filled";
   }
   .file-meta {
     font-size: 0.75rem;

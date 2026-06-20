@@ -1,6 +1,6 @@
 ---
 // app/src/pages/setup.astro
-import AppLayout from '../layouts/AppLayout.astro';
+import AppLayout from "../layouts/AppLayout.astro";
 
 import {
   hasClientSecret,
@@ -10,21 +10,23 @@ import {
   createOAuthClient,
   saveTokens,
   SCOPES,
-} from '../lib/auth.ts';
+} from "../lib/auth.ts";
 
 // Determine current setup state
 //-------------------------------------------------------------------------------------------------
 const clientSecretExists = hasClientSecret();
-const tokensExist        = hasTokens();
+const tokensExist = hasTokens();
 
 let channelName: string | null = null;
 if (clientSecretExists && tokensExist) {
   try {
-    const { google } = await import('googleapis');
-    const client = await (await import('../lib/auth.ts')).getAuthenticatedClient();
-    const yt     = google.youtube({ version: 'v3', auth: client });
-    const res    = await yt.channels.list({ part: ['snippet'], mine: true });
-    channelName  = res.data.items?.[0]?.snippet?.title ?? null;
+    const { google } = await import("googleapis");
+    const client = await (
+      await import("../lib/auth.ts")
+    ).getAuthenticatedClient();
+    const yt = google.youtube({ version: "v3", auth: client });
+    const res = await yt.channels.list({ part: ["snippet"], mine: true });
+    channelName = res.data.items?.[0]?.snippet?.title ?? null;
   } catch {
     channelName = null;
   }
@@ -32,29 +34,29 @@ if (clientSecretExists && tokensExist) {
 
 // Handle OAuth callback (code exchange)
 //-------------------------------------------------------------------------------------------------
-if (Astro.request.method === 'GET') {
-  const code = new URL(Astro.request.url).searchParams.get('code');
+if (Astro.request.method === "GET") {
+  const code = new URL(Astro.request.url).searchParams.get("code");
   if (code) {
-    const client      = await createOAuthClient();
-    const { tokens }  = await client.getToken(code);
+    const client = await createOAuthClient();
+    const { tokens } = await client.getToken(code);
     await saveTokens(tokens);
-    return Astro.redirect('/setup');
+    return Astro.redirect("/setup");
   }
 }
 
 // Handle POST (client_secret upload)
 //-------------------------------------------------------------------------------------------------
 let uploadError: string | null = null;
-if (Astro.request.method === 'POST') {
+if (Astro.request.method === "POST") {
   try {
-    const data    = await Astro.request.formData();
-    const file    = data.get('clientSecret') as File | null;
-    if (!file || file.size === 0) throw new Error('No file received.');
+    const data = await Astro.request.formData();
+    const file = data.get("clientSecret") as File | null;
+    if (!file || file.size === 0) throw new Error("No file received.");
     const content = await file.text();
     await saveClientSecret(content);
-    return Astro.redirect('/setup');
+    return Astro.redirect("/setup");
   } catch (err: unknown) {
-    uploadError = err instanceof Error ? err.message : 'Unknown error.';
+    uploadError = err instanceof Error ? err.message : "Unknown error.";
   }
 }
 
@@ -64,9 +66,9 @@ let authUrl: string | null = null;
 if (clientSecretExists && !tokensExist) {
   const client = await createOAuthClient();
   authUrl = client.generateAuthUrl({
-    access_type: 'offline',
+    access_type: "offline",
     scope: SCOPES,
-    prompt: 'consent',
+    prompt: "consent",
   });
 }
 ---
@@ -88,7 +90,7 @@ if (clientSecretExists && !tokensExist) {
       padding: 2rem;
       width: 100%;
       max-width: 480px;
-      box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
     .setup-card header {
       border: none;
@@ -118,7 +120,7 @@ if (clientSecretExists && !tokensExist) {
       position: relative;
     }
     .progress-step:not(:last-child)::after {
-      content: '';
+      content: "";
       position: absolute;
       top: 14px;
       left: 50%;
@@ -127,71 +129,127 @@ if (clientSecretExists && !tokensExist) {
       background: #e5e5e5;
       z-index: 0;
     }
-    .progress-step.done::after  { background: #1a1a1a; }
+    .progress-step.done::after {
+      background: #1a1a1a;
+    }
     .step-dot {
-      width: 28px; height: 28px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       border: 2px solid #e5e5e5;
       background: white;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 600; color: #aaa;
-      position: relative; z-index: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #aaa;
+      position: relative;
+      z-index: 1;
     }
-    .progress-step.done  .step-dot { background: #1a1a1a; border-color: #1a1a1a; color: white; }
-    .progress-step.active .step-dot { border-color: #1a1a1a; color: #1a1a1a; }
-    .step-label { font-size: 0.7rem; color: #aaa; text-align: center; }
-    .progress-step.done   .step-label { color: #1a1a1a; }
-    .progress-step.active .step-label { color: #1a1a1a; font-weight: 600; }
+    .progress-step.done .step-dot {
+      background: #1a1a1a;
+      border-color: #1a1a1a;
+      color: white;
+    }
+    .progress-step.active .step-dot {
+      border-color: #1a1a1a;
+      color: #1a1a1a;
+    }
+    .step-label {
+      font-size: 0.7rem;
+      color: #aaa;
+      text-align: center;
+    }
+    .progress-step.done .step-label {
+      color: #1a1a1a;
+    }
+    .progress-step.active .step-label {
+      color: #1a1a1a;
+      font-weight: 600;
+    }
 
     .section-title {
-      font-size: 0.95rem; font-weight: 600; color: #1a1a1a; margin-bottom: 0.35rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 0.35rem;
     }
     .section-desc {
-      font-size: 0.82rem; color: #666; margin-bottom: 1.25rem; line-height: 1.5;
+      font-size: 0.82rem;
+      color: #666;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
     }
     .success-badge {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      background: #f0fdf4; color: #166534;
-      border: 1px solid #bbf7d0; border-radius: 6px;
-      font-size: 0.82rem; font-weight: 500;
-      padding: 0.4rem 0.75rem; margin-bottom: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      margin-bottom: 1rem;
     }
     .error-msg {
-      background: #fef2f2; color: #991b1b;
-      border: 1px solid #fca5a5; border-radius: 6px;
-      font-size: 0.82rem; padding: 0.6rem 0.9rem; margin-bottom: 1rem;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 1rem;
     }
-    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1.25rem 0; }
+    .divider {
+      border: none;
+      border-top: 1px solid #f0f0f0;
+      margin: 1.25rem 0;
+    }
     .re-auth-link {
-      display: block; text-align: center; margin-top: 0.75rem;
-      font-size: 0.8rem; color: #888; text-decoration: underline; cursor: pointer;
+      display: block;
+      text-align: center;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #888;
+      text-decoration: underline;
+      cursor: pointer;
     }
   </style>
 
   <!-- Setup card - identical logic and markup to before, now inside AppLayout -->
   <main>
     <div class="setup-card">
-
       <header>
-        <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="Docker-YT-Uploader">
-          <rect width="32" height="32" rx="8" fill="#1a1a1a"/>
-          <polygon points="12,10 24,16 12,22" fill="white"/>
+        <svg
+          width="28"
+          height="28"
+          viewBox="0 0 32 32"
+          fill="none"
+          aria-label="Docker-YT-Uploader"
+        >
+          <rect width="32" height="32" rx="8" fill="#1a1a1a"></rect>
+          <polygon points="12,10 24,16 12,22" fill="white"></polygon>
         </svg>
         <h1>Docker-YT-Uploader</h1>
       </header>
 
       <!-- Progress indicator -->
       <div class="progress-steps">
-        <div class={`progress-step ${clientSecretExists ? 'done' : 'active'}`}>
-          <div class="step-dot">{clientSecretExists ? '✓' : '1'}</div>
+        <div class={`progress-step ${clientSecretExists ? "done" : "active"}`}>
+          <div class="step-dot">{clientSecretExists ? "✓" : "1"}</div>
           <span class="step-label">Credentials</span>
         </div>
-        <div class={`progress-step ${tokensExist ? 'done' : clientSecretExists ? 'active' : ''}`}>
-          <div class="step-dot">{tokensExist ? '✓' : '2'}</div>
+        <div
+          class={`progress-step ${tokensExist ? "done" : clientSecretExists ? "active" : ""}`}
+        >
+          <div class="step-dot">{tokensExist ? "✓" : "2"}</div>
           <span class="step-label">Authenticate</span>
         </div>
-        <div class={`progress-step ${tokensExist ? 'active' : ''}`}>
-          <div class="step-dot">{tokensExist ? '✓' : '3'}</div>
+        <div class={`progress-step ${tokensExist ? "active" : ""}`}>
+          <div class="step-dot">{tokensExist ? "✓" : "3"}</div>
           <span class="step-label">Ready</span>
         </div>
       </div>
@@ -199,92 +257,136 @@ if (clientSecretExists && !tokensExist) {
       {uploadError && <div class="error-msg">⚠ {uploadError}</div>}
 
       <!-- Step 1: Upload client_secret.json -->
-      {!clientSecretExists && (
-        <div>
-          <p class="section-title">Upload your credentials</p>
-          <p class="section-desc">
-            Download your <code>client_secret.json</code> from Google Cloud Console,
-            then upload it here to get started.
-          </p>
-          <form method="POST" enctype="multipart/form-data">
-            <div class="drop-zone" id="setupDropZone">
-              <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
-                   stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                   style="margin:0 auto 0.4rem">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-                <polyline points="17 8 12 3 7 8"/>
-                <line x1="12" y1="3" x2="12" y2="15"/>
-              </svg>
-              <p><strong>Drop client_secret.json here</strong> or click to browse</p>
-              <p class="drop-hint">Must be a valid Google OAuth2 credential file.</p>
-            </div>
-            <input type="file" id="setupFileInput" name="clientSecret" accept=".json" />
-            <button class="btn btn-primary" type="submit" id="setupSubmitBtn"
-                    style="margin-top:1rem" disabled>
-              Upload Credentials
-            </button>
-          </form>
-        </div>
-      )}
+      {
+        !clientSecretExists && (
+          <div>
+            <p class="section-title">Upload your credentials</p>
+            <p class="section-desc">
+              Download your <code>client_secret.json</code> from Google Cloud
+              Console, then upload it here to get started.
+            </p>
+            <form method="POST" enctype="multipart/form-data">
+              <div class="drop-zone" id="setupDropZone">
+                <svg
+                  width="24"
+                  height="24"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="#9ca3af"
+                  stroke-width="1.5"
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  style="margin:0 auto 0.4rem"
+                >
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                  <polyline points="17 8 12 3 7 8" />
+                  <line x1="12" y1="3" x2="12" y2="15" />
+                </svg>
+                <p>
+                  <strong>Drop client_secret.json here</strong> or click to
+                  browse
+                </p>
+                <p class="drop-hint">
+                  Must be a valid Google OAuth2 credential file.
+                </p>
+              </div>
+              <input
+                type="file"
+                id="setupFileInput"
+                name="clientSecret"
+                accept=".json"
+              />
+              <button
+                class="btn btn-primary"
+                type="submit"
+                id="setupSubmitBtn"
+                style="margin-top:1rem"
+                disabled
+              >
+                Upload Credentials
+              </button>
+            </form>
+          </div>
+        )
+      }
 
       <!-- Step 2: Connect YouTube account -->
-      {clientSecretExists && !tokensExist && (
-        <div>
-          <div class="success-badge">✓ Credentials uploaded</div>
-          <hr class="divider" />
-          <p class="section-title">Connect your YouTube account</p>
-          <p class="section-desc">
-            Click below to sign in with Google and grant access to your YouTube channel.
-            You'll be redirected back automatically.
-          </p>
-          <a class="btn btn-primary" href={authUrl!}>
-            Connect YouTube Account
-          </a>
-        </div>
-      )}
+      {
+        clientSecretExists && !tokensExist && (
+          <div>
+            <div class="success-badge">✓ Credentials uploaded</div>
+            <hr class="divider" />
+            <p class="section-title">Connect your YouTube account</p>
+            <p class="section-desc">
+              Click below to sign in with Google and grant access to your
+              YouTube channel. You'll be redirected back automatically.
+            </p>
+            <a class="btn btn-primary" href={authUrl!}>
+              Connect YouTube Account
+            </a>
+          </div>
+        )
+      }
 
       <!-- Step 3: Ready -->
-      {clientSecretExists && tokensExist && (
-        <div>
-          <div class="success-badge">✓ All set</div>
-          <p class="section-title">You're authenticated{channelName ? ` as ${channelName}` : ''}!</p>
-          <p class="section-desc">
-            Your credentials and tokens are stored. The app will refresh tokens automatically.
-          </p>
-          <a class="btn btn-primary" href="/">Go to Dashboard</a>
-          <a class="re-auth-link" href={authUrl ?? '/setup'}>Re-authenticate with a different account</a>
-        </div>
-      )}
-
+      {
+        clientSecretExists && tokensExist && (
+          <div>
+            <div class="success-badge">✓ All set</div>
+            <p class="section-title">
+              You're authenticated{channelName ? ` as ${channelName}` : ""}!
+            </p>
+            <p class="section-desc">
+              Your credentials and tokens are stored. The app will refresh
+              tokens automatically.
+            </p>
+            <a class="btn btn-primary" href="/">
+              Go to Dashboard
+            </a>
+            <a class="re-auth-link" href={authUrl ?? "/setup"}>
+              Re-authenticate with a different account
+            </a>
+          </div>
+        )
+      }
     </div>
   </main>
 
   <script>
     // Drop zone wiring for the credential upload
-    const zone      = document.getElementById('setupDropZone');
-    const input     = document.getElementById('setupFileInput')  as HTMLInputElement | null;
-    const submitBtn = document.getElementById('setupSubmitBtn')  as HTMLButtonElement | null;
+    const zone = document.getElementById("setupDropZone");
+    const input = document.getElementById(
+      "setupFileInput",
+    ) as HTMLInputElement | null;
+    const submitBtn = document.getElementById(
+      "setupSubmitBtn",
+    ) as HTMLButtonElement | null;
 
     if (zone && input && submitBtn) {
-      zone.addEventListener('click', () => input.click());
-      zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
-      zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-      zone.addEventListener('drop', (e) => {
+      zone.addEventListener("click", () => input.click());
+      zone.addEventListener("dragover", (e) => {
         e.preventDefault();
-        zone.classList.remove('dragover');
+        zone.classList.add("dragover");
+      });
+      zone.addEventListener("dragleave", () =>
+        zone.classList.remove("dragover"),
+      );
+      zone.addEventListener("drop", (e) => {
+        e.preventDefault();
+        zone.classList.remove("dragover");
         const f = (e as DragEvent).dataTransfer?.files[0];
         if (f) {
           const dt = new DataTransfer();
           dt.items.add(f);
           input.files = dt.files;
-          zone.classList.add('has-file');
+          zone.classList.add("has-file");
           zone.innerHTML = `<p style="color:#166534">✓ <strong>${f.name}</strong></p>`;
           submitBtn.disabled = false;
         }
       });
-      input.addEventListener('change', () => {
+      input.addEventListener("change", () => {
         if (input.files?.[0]) {
-          zone.classList.add('has-file');
+          zone.classList.add("has-file");
           zone.innerHTML = `<p style="color:#166534">✓ <strong>${input.files[0].name}</strong></p>`;
           submitBtn.disabled = false;
         }

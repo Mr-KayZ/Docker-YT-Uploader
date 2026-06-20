@@ -3,26 +3,32 @@
 // Right pane: all 6 upload form steps, drop zones, char counters,
 // schedule toggles, and submit logic.
 // Communicates with FilePanel via custom events dispatched on window:
-//   Listens for: 'file-selected' -> { detail: { name: string } }
+// Listens for: 'file-selected' -> { detail: { name: string; hasMeta: boolean } }
 //   (dispatched by the polling script in index.astro)
 
-import { YT_CATEGORIES } from '../lib/uploader.ts';
+import { YT_CATEGORIES } from "../lib/uploader.ts";
 ---
 
 <main class="panel-right" id="panelRight">
-
   <!-- Idle placeholder -->
   <div class="idle-state" id="idleState">
-    <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d1d5db"
-         stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-      <polygon points="5 3 19 12 5 21 5 3"/>
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="#d1d5db"
+      stroke-width="1.5"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polygon points="5 3 19 12 5 21 5 3"></polygon>
     </svg>
-    <p>Select a video on the left<br/>to configure its upload.</p>
+    <p>Select a video on the left<br />to configure its upload.</p>
   </div>
 
   <!-- Upload form (hidden until a file is selected) -->
   <div class="form-inner" id="uploadForm" style="display:none">
-
     <div class="card-header">
       <h2 id="formFileName">video.mp4</h2>
       <p>Configure and queue this video for YouTube.</p>
@@ -39,19 +45,34 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
 
       <div class="field">
         <label for="title">Title <span style="color:#dc2626">*</span></label>
-        <input type="text" id="title" name="title" maxlength="100" placeholder="My awesome video" />
+        <input
+          type="text"
+          id="title"
+          name="title"
+          maxlength="100"
+          placeholder="My awesome video"
+        />
         <div class="char-counter"><span id="titleCount">0</span> / 100</div>
       </div>
 
       <div class="field">
         <label for="description">Description</label>
-        <textarea id="description" name="description" maxlength="5000" placeholder="Describe your video..."></textarea>
+        <textarea
+          id="description"
+          name="description"
+          maxlength="5000"
+          placeholder="Describe your video..."></textarea>
         <div class="char-counter"><span id="descCount">0</span> / 5000</div>
       </div>
 
       <div class="field">
         <label for="tags">Tags</label>
-        <input type="text" id="tags" name="tags" placeholder="gaming, tutorial, walkthrough" />
+        <input
+          type="text"
+          id="tags"
+          name="tags"
+          placeholder="gaming, tutorial, walkthrough"
+        />
         <p class="field-hint">Comma-separated. Helps with search discovery.</p>
       </div>
 
@@ -80,9 +101,11 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
       <div class="field">
         <label for="categoryId">Category</label>
         <select id="categoryId" name="categoryId">
-          {Object.entries(YT_CATEGORIES).map(([id, name]) => (
-            <option value={id}>{name}</option>
-          ))}
+          {
+            Object.entries(YT_CATEGORIES).map(([id, name]) => (
+              <option value={id}>{name}</option>
+            ))
+          }
         </select>
       </div>
 
@@ -90,7 +113,13 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
         <label>Audience</label>
         <div class="radio-group">
           <div class="radio-btn">
-            <input type="radio" name="audience" id="aud-general" value="general" checked />
+            <input
+              type="radio"
+              name="audience"
+              id="aud-general"
+              value="general"
+              checked
+            />
             <label for="aud-general">General</label>
           </div>
           <div class="radio-btn">
@@ -98,11 +127,19 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
             <label for="aud-kids">Made for Kids</label>
           </div>
           <div class="radio-btn">
-            <input type="radio" name="audience" id="aud-18" value="age_restricted" />
+            <input
+              type="radio"
+              name="audience"
+              id="aud-18"
+              value="age_restricted"
+            />
             <label for="aud-18">Age-restricted (18+)</label>
           </div>
         </div>
-        <p class="field-hint">Required by YouTube. "Made for Kids" disables comments and personalised ads.</p>
+        <p class="field-hint">
+          Required by YouTube. "Made for Kids" disables comments and
+          personalised ads.
+        </p>
       </div>
     </div>
 
@@ -113,12 +150,20 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
         <h3>Thumbnail</h3>
       </div>
       <div class="drop-zone" id="thumbZone">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
-             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-             style="margin:0 auto 0.4rem">
-          <rect x="3" y="3" width="18" height="18" rx="2"/>
-          <circle cx="8.5" cy="8.5" r="1.5"/>
-          <polyline points="21 15 16 10 5 21"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#9ca3af"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="margin:0 auto 0.4rem"
+        >
+          <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+          <circle cx="8.5" cy="8.5" r="1.5"></circle>
+          <polyline points="21 15 16 10 5 21"></polyline>
         </svg>
         <p><strong>Drop thumbnail here</strong> or click to browse</p>
         <p class="drop-hint">JPG or PNG · Recommended 1280×720 · Max 2 MB</p>
@@ -130,19 +175,34 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
     <div class="step">
       <div class="step-header">
         <div class="step-num">4</div>
-        <h3>Captions / Subtitles <span style="font-weight:400;color:#888;font-size:0.8rem">(optional)</span></h3>
+        <h3>
+          Captions / Subtitles <span
+            style="font-weight:400;color:#888;font-size:0.8rem">(optional)</span
+          >
+        </h3>
       </div>
       <div class="drop-zone" id="capZone">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
-             stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-             style="margin:0 auto 0.4rem">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
-          <polyline points="14 2 14 8 20 8"/>
-          <line x1="8" y1="13" x2="16" y2="13"/>
-          <line x1="8" y1="17" x2="12" y2="17"/>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="#9ca3af"
+          stroke-width="1.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+          style="margin:0 auto 0.4rem"
+        >
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"
+          ></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="8" y1="13" x2="16" y2="13"></line>
+          <line x1="8" y1="17" x2="12" y2="17"></line>
         </svg>
         <p><strong>Drop .srt or .vtt file here</strong> or click to browse</p>
-        <p class="drop-hint">Will be uploaded to YouTube after the video processes.</p>
+        <p class="drop-hint">
+          Will be uploaded to YouTube after the video processes.
+        </p>
       </div>
       <input type="file" id="capInput" accept=".srt,.vtt" />
       <div class="field" style="margin-top:0.75rem">
@@ -157,7 +217,8 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
         </select>
       </div>
       <p class="field-hint" style="margin-top:0.4rem">
-        Note: End screens and info cards cannot be set via the YouTube API - configure those in YouTube Studio after upload.
+        Note: End screens and info cards cannot be set via the YouTube API -
+        configure those in YouTube Studio after upload.
       </p>
     </div>
 
@@ -172,15 +233,31 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
         <label>Visibility</label>
         <div class="radio-group">
           <div class="radio-btn">
-            <input type="radio" name="privacyStatus" id="priv-private" value="private" checked />
+            <input
+              type="radio"
+              name="privacyStatus"
+              id="priv-private"
+              value="private"
+              checked
+            />
             <label for="priv-private">Private</label>
           </div>
           <div class="radio-btn">
-            <input type="radio" name="privacyStatus" id="priv-unlisted" value="unlisted" />
+            <input
+              type="radio"
+              name="privacyStatus"
+              id="priv-unlisted"
+              value="unlisted"
+            />
             <label for="priv-unlisted">Unlisted</label>
           </div>
           <div class="radio-btn">
-            <input type="radio" name="privacyStatus" id="priv-public" value="public" />
+            <input
+              type="radio"
+              name="privacyStatus"
+              id="priv-public"
+              value="public"
+            />
             <label for="priv-public">Public</label>
           </div>
         </div>
@@ -194,9 +271,16 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
             <span class="toggle-slider"></span>
           </label>
         </div>
-        <div class="collapsible collapsed" id="schedPubField" style="max-height:60px">
+        <div
+          class="collapsible collapsed"
+          id="schedPubField"
+          style="max-height:60px"
+        >
           <input type="datetime-local" id="publishAt" name="publishAt" />
-          <p class="field-hint">The video uploads as Private, then goes live at this date &amp; time.</p>
+          <p class="field-hint">
+            The video uploads as Private, then goes live at this date &amp;
+            time.
+          </p>
         </div>
       </div>
     </div>
@@ -215,9 +299,20 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
             <span class="toggle-slider"></span>
           </label>
         </div>
-        <div class="collapsible collapsed" id="schedUploadField" style="max-height:60px">
-          <input type="datetime-local" id="scheduledUploadAt" name="scheduledUploadAt" />
-          <p class="field-hint">The upload to YouTube will start at this time. Leave off to upload immediately.</p>
+        <div
+          class="collapsible collapsed"
+          id="schedUploadField"
+          style="max-height:60px"
+        >
+          <input
+            type="datetime-local"
+            id="scheduledUploadAt"
+            name="scheduledUploadAt"
+          />
+          <p class="field-hint">
+            The upload to YouTube will start at this time. Leave off to upload
+            immediately.
+          </p>
         </div>
       </div>
     </div>
@@ -225,17 +320,26 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
     <!-- Submit -->
     <div class="submit-area">
       <button class="btn btn-primary" id="submitBtn" type="button">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-             stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="16 16 12 12 8 16"/>
-          <line x1="12" y1="12" x2="12" y2="21"/>
-          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/>
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="2"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        >
+          <polyline points="16 16 12 12 8 16"></polyline>
+          <line x1="12" y1="12" x2="12" y2="21"></line>
+          <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
         </svg>
         Upload to YouTube
       </button>
-      <button class="btn btn-secondary" id="clearBtn" type="button">Clear form</button>
+      <button class="btn btn-secondary" id="clearBtn" type="button"
+        >Clear form</button
+      >
     </div>
-
   </div>
 </main>
 
@@ -262,84 +366,149 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
     text-align: center;
     gap: 0.75rem;
   }
-  .idle-state p { font-size: 0.9rem; }
+  .idle-state p {
+    font-size: 0.9rem;
+  }
 </style>
 
 <script>
   // State
   let selectedFile: string | null = null;
   let thumbFile: File | null = null;
-  let capFile:   File | null = null;
+  let capFile: File | null = null;
 
   // DOM refs
-  const idleState     = document.getElementById('idleState')!;
-  const uploadForm    = document.getElementById('uploadForm')!;
-  const formFileName  = document.getElementById('formFileName')!;
-  const statusBar     = document.getElementById('statusBar')!;
-  const submitBtn     = document.getElementById('submitBtn') as HTMLButtonElement;
-  const clearBtn      = document.getElementById('clearBtn')!;
-  const titleInput    = document.getElementById('title') as HTMLInputElement;
-  const titleCount    = document.getElementById('titleCount')!;
-  const descInput     = document.getElementById('description') as HTMLTextAreaElement;
-  const descCount     = document.getElementById('descCount')!;
-  const thumbZone     = document.getElementById('thumbZone')!;
-  const thumbInput    = document.getElementById('thumbInput') as HTMLInputElement;
-  const capZone       = document.getElementById('capZone')!;
-  const capInput      = document.getElementById('capInput') as HTMLInputElement;
-  const schedPubToggle      = document.getElementById('schedPubToggle')    as HTMLInputElement;
-  const schedPubField       = document.getElementById('schedPubField')!;
-  const schedUploadToggle   = document.getElementById('schedUploadToggle') as HTMLInputElement;
-  const schedUploadField    = document.getElementById('schedUploadField')!;
-  const publishAtInput      = document.getElementById('publishAt')          as HTMLInputElement;
-  const scheduledUploadAtInput = document.getElementById('scheduledUploadAt') as HTMLInputElement;
+  const idleState = document.getElementById("idleState")!;
+  const uploadForm = document.getElementById("uploadForm")!;
+  const formFileName = document.getElementById("formFileName")!;
+  const statusBar = document.getElementById("statusBar")!;
+  const submitBtn = document.getElementById("submitBtn") as HTMLButtonElement;
+  const clearBtn = document.getElementById("clearBtn")!;
+  const titleInput = document.getElementById("title") as HTMLInputElement;
+  const titleCount = document.getElementById("titleCount")!;
+  const descInput = document.getElementById(
+    "description",
+  ) as HTMLTextAreaElement;
+  const descCount = document.getElementById("descCount")!;
+  const thumbZone = document.getElementById("thumbZone")!;
+  const thumbInput = document.getElementById("thumbInput") as HTMLInputElement;
+  const capZone = document.getElementById("capZone")!;
+  const capInput = document.getElementById("capInput") as HTMLInputElement;
+  const schedPubToggle = document.getElementById(
+    "schedPubToggle",
+  ) as HTMLInputElement;
+  const schedPubField = document.getElementById("schedPubField")!;
+  const schedUploadToggle = document.getElementById(
+    "schedUploadToggle",
+  ) as HTMLInputElement;
+  const schedUploadField = document.getElementById("schedUploadField")!;
+  const publishAtInput = document.getElementById(
+    "publishAt",
+  ) as HTMLInputElement;
+  const scheduledUploadAtInput = document.getElementById(
+    "scheduledUploadAt",
+  ) as HTMLInputElement;
 
-  // Listen for file selection from the polling script in index.astro
-  window.addEventListener('file-selected', (e: Event) => {
-    const { name } = (e as CustomEvent<{ name: string }>).detail;
+  // Listen for file selection events from the left panel. When a file is selected,
+  // show the form and pre-fill it if metadata is available.
+  window.addEventListener("file-selected", async (e: Event) => {
+    const { name, hasMeta } = (
+      e as CustomEvent<{ name: string; hasMeta: boolean }>
+    ).detail;
     selectedFile = name;
     formFileName.textContent = name;
-    idleState.style.display  = 'none';
-    uploadForm.style.display = 'block';
-    if (!titleInput.value) {
-      titleInput.value = name.replace(/\.[^/.]+$/, '');
-      titleCount.textContent = String(titleInput.value.length);
-    }
+    idleState.style.display = "none";
+    uploadForm.style.display = "block";
     hideStatus();
+
+    const baseName = name.replace(/\.[^/.]+$/, "");
+
+    if (hasMeta) {
+      try {
+        const res = await fetch(`/api/meta?file=${encodeURIComponent(name)}`);
+        const meta = await res.json();
+
+        titleInput.value = meta.title ?? baseName;
+        titleCount.textContent = String(titleInput.value.length);
+
+        descInput.value = meta.description ?? "";
+        descCount.textContent = String(descInput.value.length);
+
+        (document.getElementById("tags") as HTMLInputElement).value =
+          Array.isArray(meta.tags) ? meta.tags.join(", ") : "";
+
+        if (meta.categoryId)
+          (document.getElementById("categoryId") as HTMLSelectElement).value =
+            meta.categoryId;
+
+        if (meta.language)
+          (document.getElementById("language") as HTMLSelectElement).value =
+            meta.language;
+
+        if (meta.privacy) {
+          const radio = document.getElementById(
+            `priv-${meta.privacy}`,
+          ) as HTMLInputElement | null;
+          if (radio) radio.checked = true;
+        }
+
+        if (meta.audience) {
+          const radioId = `aud-${meta.audience === "age_restricted" ? "18" : meta.audience}`;
+          const radio = document.getElementById(
+            radioId,
+          ) as HTMLInputElement | null;
+          if (radio) radio.checked = true;
+        }
+
+        showStatus("Form pre-filled from .meta.json", "info");
+        setTimeout(hideStatus, 3000);
+      } catch {
+        // Sidecar fetch failed - fall back silently
+        titleInput.value = baseName;
+        titleCount.textContent = String(titleInput.value.length);
+      }
+    } else {
+      if (!titleInput.value) {
+        titleInput.value = baseName;
+        titleCount.textContent = String(titleInput.value.length);
+      }
+    }
   });
 
   // Character counters
-  titleInput.addEventListener('input', () => {
+  titleInput.addEventListener("input", () => {
     const n = titleInput.value.length;
     titleCount.textContent = String(n);
-    titleCount.parentElement!.classList.toggle('warn', n > 90);
+    titleCount.parentElement!.classList.toggle("warn", n > 90);
   });
-  descInput.addEventListener('input', () => {
+  descInput.addEventListener("input", () => {
     const n = descInput.value.length;
     descCount.textContent = String(n);
-    descCount.parentElement!.classList.toggle('warn', n > 4800);
+    descCount.parentElement!.classList.toggle("warn", n > 4800);
   });
 
   // Schedule toggles
-  schedPubToggle.addEventListener('change', () => {
-    schedPubField.classList.toggle('collapsed', !schedPubToggle.checked);
-    if (!schedPubToggle.checked) publishAtInput.value = '';
+  schedPubToggle.addEventListener("change", () => {
+    schedPubField.classList.toggle("collapsed", !schedPubToggle.checked);
+    if (!schedPubToggle.checked) publishAtInput.value = "";
     if (schedPubToggle.checked)
-      (document.getElementById('priv-private') as HTMLInputElement).checked = true;
+      (document.getElementById("priv-private") as HTMLInputElement).checked =
+        true;
   });
-  schedUploadToggle.addEventListener('change', () => {
-    schedUploadField.classList.toggle('collapsed', !schedUploadToggle.checked);
-    if (!schedUploadToggle.checked) scheduledUploadAtInput.value = '';
+  schedUploadToggle.addEventListener("change", () => {
+    schedUploadField.classList.toggle("collapsed", !schedUploadToggle.checked);
+    if (!schedUploadToggle.checked) scheduledUploadAtInput.value = "";
   });
 
   // Drop zones
-  setupDropZone(thumbZone, thumbInput, ['image/jpeg', 'image/png'], (file) => {
+  setupDropZone(thumbZone, thumbInput, ["image/jpeg", "image/png"], (file) => {
     thumbFile = file;
-    thumbZone.classList.add('has-file');
+    thumbZone.classList.add("has-file");
     thumbZone.innerHTML = `<p style="color:#166534">✓ <strong>${file.name}</strong></p>`;
   });
   setupDropZone(capZone, capInput, [], (file) => {
     capFile = file;
-    capZone.classList.add('has-file');
+    capZone.classList.add("has-file");
     capZone.innerHTML = `<p style="color:#166534">✓ <strong>${file.name}</strong></p>`;
   });
 
@@ -347,95 +516,131 @@ import { YT_CATEGORIES } from '../lib/uploader.ts';
     zone: HTMLElement,
     input: HTMLInputElement,
     allowedTypes: string[],
-    onFile: (f: File) => void
+    onFile: (f: File) => void,
   ) {
-    zone.addEventListener('click', () => input.click());
-    zone.addEventListener('dragover', (e) => { e.preventDefault(); zone.classList.add('dragover'); });
-    zone.addEventListener('dragleave', () => zone.classList.remove('dragover'));
-    zone.addEventListener('drop', (e) => {
+    zone.addEventListener("click", () => input.click());
+    zone.addEventListener("dragover", (e) => {
       e.preventDefault();
-      zone.classList.remove('dragover');
-      const f = (e as DragEvent).dataTransfer?.files[0];
-      if (f && (allowedTypes.length === 0 || allowedTypes.includes(f.type))) onFile(f);
+      zone.classList.add("dragover");
     });
-    input.addEventListener('change', () => {
+    zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+    zone.addEventListener("drop", (e) => {
+      e.preventDefault();
+      zone.classList.remove("dragover");
+      const f = (e as DragEvent).dataTransfer?.files[0];
+      if (f && (allowedTypes.length === 0 || allowedTypes.includes(f.type)))
+        onFile(f);
+    });
+    input.addEventListener("change", () => {
       const f = input.files?.[0];
       if (f) onFile(f);
     });
   }
 
   // Submit
-  submitBtn.addEventListener('click', async () => {
+  submitBtn.addEventListener("click", async () => {
     if (!selectedFile) return;
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Queuing…';
+    submitBtn.textContent = "Queuing…";
     hideStatus();
 
     const form = new FormData();
-    form.append('fileName',        selectedFile);
-    form.append('title',           titleInput.value.trim());
-    form.append('description',     (document.getElementById('description') as HTMLTextAreaElement).value);
-    form.append('tags',            (document.getElementById('tags')         as HTMLInputElement).value);
-    form.append('categoryId',      (document.getElementById('categoryId')   as HTMLSelectElement).value);
-    form.append('language',        (document.getElementById('language')     as HTMLSelectElement).value);
-    form.append('captionLanguage', (document.getElementById('captionLanguage') as HTMLSelectElement).value);
-    form.append('audience',        (document.querySelector('input[name="audience"]:checked')      as HTMLInputElement)?.value ?? 'general');
-    form.append('privacyStatus',   (document.querySelector('input[name="privacyStatus"]:checked') as HTMLInputElement)?.value ?? 'private');
+    form.append("fileName", selectedFile);
+    form.append("title", titleInput.value.trim());
+    form.append(
+      "description",
+      (document.getElementById("description") as HTMLTextAreaElement).value,
+    );
+    form.append(
+      "tags",
+      (document.getElementById("tags") as HTMLInputElement).value,
+    );
+    form.append(
+      "categoryId",
+      (document.getElementById("categoryId") as HTMLSelectElement).value,
+    );
+    form.append(
+      "language",
+      (document.getElementById("language") as HTMLSelectElement).value,
+    );
+    form.append(
+      "captionLanguage",
+      (document.getElementById("captionLanguage") as HTMLSelectElement).value,
+    );
+    form.append(
+      "audience",
+      (
+        document.querySelector(
+          'input[name="audience"]:checked',
+        ) as HTMLInputElement
+      )?.value ?? "general",
+    );
+    form.append(
+      "privacyStatus",
+      (
+        document.querySelector(
+          'input[name="privacyStatus"]:checked',
+        ) as HTMLInputElement
+      )?.value ?? "private",
+    );
     if (schedPubToggle.checked && publishAtInput.value)
-      form.append('publishAt', new Date(publishAtInput.value).toISOString());
+      form.append("publishAt", new Date(publishAtInput.value).toISOString());
     if (schedUploadToggle.checked && scheduledUploadAtInput.value)
-      form.append('scheduledUploadAt', new Date(scheduledUploadAtInput.value).toISOString());
-    if (thumbFile) form.append('thumbnail', thumbFile);
-    if (capFile)   form.append('caption',   capFile);
+      form.append(
+        "scheduledUploadAt",
+        new Date(scheduledUploadAtInput.value).toISOString(),
+      );
+    if (thumbFile) form.append("thumbnail", thumbFile);
+    if (capFile) form.append("caption", capFile);
 
     try {
-      const res  = await fetch('/api/enqueue', { method: 'POST', body: form });
+      const res = await fetch("/api/enqueue", { method: "POST", body: form });
       const data = await res.json();
       if (res.ok) {
         showStatus(
           schedUploadToggle.checked
             ? `Scheduled for upload at ${scheduledUploadAtInput.value}.`
-            : 'Upload started - check back shortly.',
-          'success'
+            : "Upload started - check back shortly.",
+          "success",
         );
         selectedFile = null;
         setTimeout(() => {
-          idleState.style.display  = 'flex';
-          uploadForm.style.display = 'none';
+          idleState.style.display = "flex";
+          uploadForm.style.display = "none";
         }, 3000);
       } else {
-        showStatus(data.error ?? 'Something went wrong.', 'error');
+        showStatus(data.error ?? "Something went wrong.", "error");
       }
     } catch {
-      showStatus('Network error - check server logs.', 'error');
+      showStatus("Network error - check server logs.", "error");
     } finally {
       submitBtn.disabled = false;
       submitBtn.innerHTML = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/><path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"/></svg> Upload to YouTube`;
-      window.dispatchEvent(new CustomEvent('refresh-files'));
+      window.dispatchEvent(new CustomEvent("refresh-files"));
     }
   });
 
   // Clear form
-  clearBtn.addEventListener('click', () => {
-    titleInput.value = '';
-    descInput.value  = '';
-    (document.getElementById('tags') as HTMLInputElement).value = '';
+  clearBtn.addEventListener("click", () => {
+    titleInput.value = "";
+    descInput.value = "";
+    (document.getElementById("tags") as HTMLInputElement).value = "";
     thumbFile = capFile = null;
-    titleCount.textContent = '0';
-    descCount.textContent  = '0';
+    titleCount.textContent = "0";
+    descCount.textContent = "0";
     schedPubToggle.checked = schedUploadToggle.checked = false;
-    schedPubField.classList.add('collapsed');
-    schedUploadField.classList.add('collapsed');
-    publishAtInput.value = scheduledUploadAtInput.value = '';
+    schedPubField.classList.add("collapsed");
+    schedUploadField.classList.add("collapsed");
+    publishAtInput.value = scheduledUploadAtInput.value = "";
     hideStatus();
   });
 
   // Status helpers
-  function showStatus(msg: string, type: 'info' | 'success' | 'error') {
+  function showStatus(msg: string, type: "info" | "success" | "error") {
     statusBar.textContent = msg;
-    statusBar.className   = `status-bar ${type}`;
+    statusBar.className = `status-bar ${type}`;
   }
   function hideStatus() {
-    statusBar.className = 'status-bar hidden';
+    statusBar.className = "status-bar hidden";
   }
 </script>

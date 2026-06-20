@@ -3,13 +3,13 @@
 // Thin orchestrator: initialises server-side services, composes components,
 // and owns the file-list polling loop + file-selection event bridge.
 
-import AppLayout    from '../layouts/AppLayout.astro';
-import Header       from '../components/Header.astro';
-import FilePanel    from '../components/FilePanel.astro';
-import UploadForm   from '../components/UploadForm.astro';
+import AppLayout from "../layouts/AppLayout.astro";
+import Header from "../components/Header.astro";
+import FilePanel from "../components/FilePanel.astro";
+import UploadForm from "../components/UploadForm.astro";
 
-import { initWatcher }    from '../lib/watcher.ts';
-import { startScheduler } from '../lib/scheduler.ts';
+import { initWatcher } from "../lib/watcher.ts";
+import { startScheduler } from "../lib/scheduler.ts";
 
 initWatcher();
 startScheduler();
@@ -28,28 +28,33 @@ startScheduler();
   // Polling + file selection - owns the left panel DOM and bridges
   // selection events to UploadForm via window CustomEvents.
 
-  const fileList  = document.getElementById('fileList')!;
-  const fileCount = document.getElementById('fileCount')!;
+  const fileList = document.getElementById("fileList")!;
+  const fileCount = document.getElementById("fileCount")!;
 
   let selectedFile: string | null = null;
 
   async function refreshFileList() {
     try {
       const [filesRes, queueRes] = await Promise.all([
-        fetch('/api/files'),
-        fetch('/api/enqueue'),
+        fetch("/api/files"),
+        fetch("/api/enqueue"),
       ]);
-      const { files } = await filesRes.json() as {
-        files: { name: string; path: string; addedAt: string }[];
+      const { files } = (await filesRes.json()) as {
+        files: {
+          name: string;
+          path: string;
+          addedAt: string;
+          hasMeta: boolean;
+        }[];
       };
-      const { queue, history } = await queueRes.json() as {
-        queue:   { fileName: string; status: string }[];
+      const { queue, history } = (await queueRes.json()) as {
+        queue: { fileName: string; status: string }[];
         history: { fileName: string; status: string }[];
       };
 
       const queueMap = new Map([
-        ...queue.map(e   => [e.fileName, e.status] as [string, string]),
-        ...history.map(e => [e.fileName, e.status] as [string, string]),
+        ...queue.map((e) => [e.fileName, e.status] as [string, string]),
+        ...history.map((e) => [e.fileName, e.status] as [string, string]),
       ]);
 
       fileCount.textContent = String(files.length);
@@ -59,50 +64,58 @@ startScheduler();
         return;
       }
 
-      fileList.innerHTML = files.map(f => {
-        const status      = queueMap.get(f.name) ?? '';
-        const statusClass = status ? ` ${status}` : '';
-        const badge       = status
-          ? `<span class="badge badge-${status}">${status}</span>`
-          : '';
-        const added = new Date(f.addedAt).toLocaleString();
-        const isSelected = selectedFile === f.name ? ' selected' : '';
+      fileList.innerHTML = files
+        .map((f) => {
+          const status = queueMap.get(f.name) ?? "";
+          const statusClass = status ? ` ${status}` : "";
+          const badge = status
+            ? `<span class="badge badge-${status}">${status}</span>`
+            : "";
+          const added = new Date(f.addedAt).toLocaleString();
+          const isSelected = selectedFile === f.name ? " selected" : "";
 
-        return `
+          return `
           <div class="file-item${statusClass}${isSelected}"
-               data-name="${f.name}" data-path="${f.path}">
-            <div class="file-icon">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-                   stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-                <polygon points="23 7 16 12 23 17 23 7"/>
-                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-              </svg>
+            data-name="${f.name}" data-path="${f.path}"
+            data-has-meta="${f.hasMeta ? "1" : "0"}">
+          <div class="file-icon">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+              <polygon points="23 7 16 12 23 17 23 7"/>
+              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
+            </svg>
+          </div>
+          <div class="file-info">
+            <div class="file-name-row">
+              <span class="file-name">${f.name}</span>
+              ${f.hasMeta ? '<span class="meta-badge" title=".meta.json found - form will be pre-filled">META</span>' : ""}
             </div>
-            <div class="file-info">
-              <div class="file-name">${f.name}</div>
               <div class="file-meta">${added}</div>
             </div>
             ${badge}
           </div>`;
-      }).join('');
+        })
+        .join("");
 
       // Attach click handlers
-      fileList.querySelectorAll<HTMLElement>('.file-item').forEach(el => {
-        el.addEventListener('click', () => {
-          const name = el.getAttribute('data-name')!;
+      fileList.querySelectorAll<HTMLElement>(".file-item").forEach((el) => {
+        el.addEventListener("click", () => {
+          const name = el.getAttribute("data-name")!;
+          const hasMeta = el.dataset.hasMeta === "1";
           selectedFile = name;
-          window.dispatchEvent(new CustomEvent('file-selected', { detail: { name } }));
-          refreshFileList(); // re-render to update selected highlight
+          window.dispatchEvent(
+            new CustomEvent("file-selected", { detail: { name, hasMeta } }),
+          );
+          refreshFileList();
         });
       });
-
     } catch (err) {
-      console.error('[ui] refreshFileList error:', err);
+      console.error("[ui] refreshFileList error:", err);
     }
   }
 
   // UploadForm signals us to refresh after a successful enqueue
-  window.addEventListener('refresh-files', () => refreshFileList());
+  window.addEventListener("refresh-files", () => refreshFileList());
 
   // Boot
   refreshFileList();
