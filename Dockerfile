@@ -23,7 +23,8 @@ COPY --from=builder /app/package.json ./package.json
 
 # Create runtime directories inside the container
 RUN mkdir -p /videos && chmod 777 /videos && \
-    mkdir -p /auth   && chmod 777 /auth
+    mkdir -p /auth   && chmod 777 /auth   && \
+    mkdir -p /data   && chmod 777 /data
 
 # Expose the port
 EXPOSE 4321

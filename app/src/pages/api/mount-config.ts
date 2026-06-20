@@ -1,6 +1,6 @@
 // app/src/pages/api/mount-config.ts
-// GET  /api/mount-config  — returns current active paths + whether they are user-overridden
-// POST /api/mount-config  — saves new paths to /data/mount-config.json
+// GET  /api/mount-config  - returns current active paths + whether they are user-overridden
+// POST /api/mount-config  - saves new paths to /data/mount-config.json
 
 import type { APIRoute } from "astro";
 import { VIDEOS_DIR, AUTH_DIR, DATA_DIR } from "../../lib/paths.js";
@@ -25,7 +25,7 @@ export const POST: APIRoute = async ({ request }) => {
       dataDir?: string;
     };
 
-    // Strip empty strings — treat blank submission as "use default"
+    // Strip empty strings - treat blank submission as "use default"
     const config = {
       videosDir: body.videosDir?.trim() || undefined,
       authDir:   body.authDir?.trim()   || undefined,

@@ -18,7 +18,7 @@ export const GET: APIRoute = async ({ url }) => {
     const client = await createOAuthClient();
     const { tokens } = await client.getToken(code);
     await saveTokens(tokens);
-    return redirect("/");
+    return redirect("/setup");
   } catch (err) {
     console.error("[auth] Token exchange failed:", err);
     return redirect("/setup?error=token_exchange_failed");

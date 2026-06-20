@@ -1,4 +1,4 @@
-# Docker-YT-Uploader: Ver. 0.8.0
+# Docker-YT-Uploader: Ver. 0.9.1
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
 ## Use Case
@@ -60,7 +60,7 @@ A `tokens.json` file is saved to the `auth/` volume automatically. This only nee
 
 > Note: `client_secret.json` and `tokens.json` are listed in `.gitignore` and will never be committed. Never share these files publicly.
 
-### 2. (OTHER STUFF THATS NECESSARY LATER)
+### 2. Docker Setup guide (Fill as needed later)
 
 ---
 
@@ -109,13 +109,59 @@ The container is designed to run persistently alongside other services on a NAS 
 
 ## Docker Configuration
 
-> Note: Volume mounts, port mappings, and resource limits will be documented here as the project matures. These details are subject to change during early development.
+> **Note:** Port mappings, resource limits, and environment variable configuration will be documented here as the project matures.
+
+### Volume Mounts
+
+The app requires three host directories to be mounted into the container. These can be configured from the **Setup page** and take effect after restarting the container. The defaults are:
+
+
+| Mount | Default path | Purpose |
+| :-- | :-- | :-- |
+| Videos | `/videos` | Watched folder - drop `.mp4` files (and optional `.meta.json` sidecars) here |
+| Auth | `/auth` | Stores `client_secret.json` and OAuth tokens |
+| Data | `/data` | Stores queue state and persistence files |
+
+**Docker Compose example:**
+
+```yaml
+services:
+  yt-uploader:
+    image: docker-yt-uploader
+    ports:
+      - "3000:3000"
+    volumes:
+      - /your/videos:/videos
+      - /your/auth:/auth
+      - /your/data:/data
+```
+
+**Docker CLI equivalent:**
+
+```bash
+docker run -p 3000:3000 \
+  -v /your/videos:/videos \
+  -v /your/auth:/auth \
+  -v /your/data:/data \
+  docker-yt-uploader
+```
+
+> Mount paths can be changed in the Setup UI under **Mount Points**. Saved changes apply on the next container restart. The active paths shown in the UI reflect what the currently running container was started with.
+
+### First-Run Setup
+
+On first run, navigate to `http://localhost:3000/setup`. The setup page walks through two required steps before the uploader is accessible:
+
+1. **Upload credentials** - Download your `client_secret.json` from Google Cloud Console and upload it via the drag-and-drop zone
+2. **Authenticate** - Click "Connect YouTube Account" and complete the Google OAuth flow; you will be returned to the setup page automatically
+
+Once both steps are complete, the **Ready to proceed?** card becomes active and you can navigate to the uploader. The middleware blocks access to all non-setup routes until both credentials and tokens are present.
 
 ### Sidecar Metadata (`.meta.json`)
 
-When a video is dropped into the `/videos` folder, the app will also look for a companion `.meta.json` file in the same directory with the same base name (e.g. `my-video.mp4` → `my-video.meta.json`). If found, its contents are used to pre-fill the upload form fields automatically.
+When a video is dropped into the `/videos` folder, the app also looks for a companion `.meta.json` file in the same directory with the same base name (e.g. `my-video.mp4` → `my-video.meta.json`). If found, its contents pre-fill the upload form fields automatically.
 
-All fields are optional - any field omitted will simply leave the corresponding form field at its default value.
+All fields are optional - any omitted field leaves the corresponding form field at its default value.
 
 ```json
 {
@@ -130,16 +176,16 @@ All fields are optional - any field omitted will simply leave the corresponding 
 ```
 
 | Field | Type | Accepted values |
-|---|---|---|
+| :-- | :-- | :-- |
 | `title` | `string` | Any text, max 100 characters |
 | `description` | `string` | Any text, max 5000 characters |
 | `tags` | `string[]` | Array of strings, 500 characters total across all tags |
 | `privacy` | `string` | `"public"`, `"private"`, `"unlisted"` |
-| `categoryId` | `string` | YouTube numeric category ID (e.g. `"20"` = Gaming, `"22"` = People & Blogs) |
+| `categoryId` | `string` | YouTube numeric category ID (e.g. `"20"` = Gaming, `"22"` = People \& Blogs) |
 | `language` | `string` | BCP-47 code (e.g. `"en"`, `"fr"`, `"ja"`) |
 | `audience` | `string` | `"general"`, `"kids"`, `"age_restricted"` |
 
-Files that have a recognised sidecar are marked with a **META** badge in the file panel. Invalid or malformed `.meta.json` files are silently ignored and the form remains blank.
+Files with a recognised sidecar are marked with a **META** badge in the file panel. Invalid or malformed `.meta.json` files are silently ignored and the form remains blank.
 
 ---
 
@@ -153,38 +199,36 @@ This is a solo project currently in very early development. Features will be imp
 
 ### Roadmap:
 
-| Version | Milestone | Status |
-|---|---|---|
-| 0.1.0 | Project scaffold - Astro + Docker + basic routing | Complete |
-| 0.2.0 | Auth system - OAuth setup page, credential upload, callback | Complete |
-| 0.3.0 | File watcher + queue persistence | Complete |
-| 0.4.0 | Uploader core + scheduler | Complete |
-| 0.5.0 | Web UI - metadata form, file list panel, enqueue flow | Complete |
-| 0.6.0 | Cross-file integration fixes, route corrections, server init hooks | Complete |
-| 0.7.0 | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | Complete |
-| 0.8.0 | Sidecar `.meta.json` support - auto-fill metadata form from file | Complete |
-| 0.9.0 | Mount point configuration - setup UI for watched folder and auth directory | In Progress |
-| 0.9.1 | Resumable uploads + live upload progress indicator + spinner | Planned |
-| 0.9.2 | Upload info panel - progress bar, upload speed, quota usage | Planned |
-| 0.9.3 | In-browser notifications - toast on completion + bell popover with history | Planned |
-| 0.9.4 | Upload complete toast - video title + YouTube link + dismiss button | Planned |
-| 0.9.5 | Queue management - reorder, pause, cancel pending uploads | Planned |
-| 0.9.6 | Playlist support - pull channel playlists, assign at upload time | Planned |
-| 0.9.7 | Docker log viewer - dedicated page for live container console output | Planned |
-| 0.9.8 | Additional notification channels - webhooks, ntfy, Gotify | Planned |
-| 0.9.9 | Drag-and-drop video upload directly into the web UI | Planned |
-| 0.9.9 | Final bug fixing round (see Fixes to Implement) and testing | Planned |
-| 1.0.0 | All key and planned features complete; end-to-end Docker tested | Target |
+| Version | Milestone                                                                                    | Status      |
+| ------- | -------------------------------------------------------------------------------------------- | ------------|
+| 0.1.0   | Project scaffold - Astro + Docker + basic routing                                            | Complete    |
+| 0.2.0   | Auth system - OAuth setup page, credential upload, callback                                  | Complete    |
+| 0.3.0   | File watcher + queue persistence                                                             | Complete    |
+| 0.4.0   | Uploader core + scheduler                                                                    | Complete    |
+| 0.5.0   | Web UI - metadata form, file list panel, enqueue flow                                        | Complete    |
+| 0.6.0   | Cross-file integration fixes, route corrections, server init hooks                           | Complete    |
+| 0.7.0   | Refactor index.astro into components + independent panel scrolling + selected file highlight | Complete    |
+| 0.8.0   | Sidecar .meta.json support - auto-fill metadata form from file                               | Complete    |
+| 0.9.0   | Mount point configuration - setup UI for watched folder, auth, and data directories          | Complete    |
+| 0.9.1   | Setup UX polish - proceed card, OAuth callback redirect fix, button alignment fixes          | Complete    |
+| 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)              | In Progress |
+| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                  | Planned     |
+| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                   | Planned     |
+| 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                        | Planned     |
+| 0.9.6   | Playlist support - pull channel playlists, assign at upload time                             | Planned     |
+| 0.9.7   | Docker log viewer - dedicated page for live container console output                         | Planned     |
+| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify                                    | Planned     |
+| 0.9.9   | Drag-and-drop video upload directly into the web UI                                          | Planned     |
+| 0.9.10  | Final bug fixing round (see Fixes to Implement) and testing                                  | Planned     |
+| 1.0.0   | All key and planned features complete; end-to-end Docker tested                              | Target      |
 
 ### Fixes to Implement
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
-- **Verify solo Docker container operation** - Confirm the app works correctly as a standalone Docker image; build and test a Docker image independent of compose
-- **Refactor `index.astro` into components** - The main page is excessively large; break it into Astro layouts, components, and an `assets/` folder for easier maintenance
-- **Consolidate setup flow into a single modal-based page** - Replace the separate `setup.astro` route with an inline modal system on `index.astro`; explore using Astro component files as modal panels for maintainability
-- **Separate left and right panel scroll contexts** - The file list (left pane) and metadata form (right pane) should each scroll independently
-- **Selected file highlight** - The active file in the left panel should darken slightly and show a rounded border to make the selection state unambiguous
-- **Upload complete toast notification** - On successful upload, show a green toast (with darker green border and a dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should also appear in the bell icon popover
-- **Tooltips** - Enable tooltip support across the UI; icon buttons in the header (bell, logs) should show a tooltip on hover describing their function
-- **Add tags** for some videos, such as if a video has a META file, it should show up as a neat little tag on the side of the video instead of being embedded in text.
-- **Have a back button on the UI** on the top left perhaps? Allows the user to go back to the setup page.
+- **Verify solo Docker container operation** - Confirm the app works correctly as a standalone Docker image; build and test independent of Compose
+- **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
+- **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
+- **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
+- **Tooltips on icon buttons** - Header icon buttons (bell, logs, etc.) should show a descriptive tooltip on hover
+- **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! <Video Title>: <YouTube link>"; the same notification should appear in the bell popover history
+- **Add Google OAuth procedure** - Detail how to get the OAuth certificate from Google Console on the setup page
