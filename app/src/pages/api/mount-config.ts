@@ -1,4 +1,4 @@
-// app/src/lib/mountConfig.ts
+// app/src/lib/api/mountConfig.ts
 // Persists user-defined mount path overrides to /data/mount-config.json.
 // paths.ts reads this file at startup; changes require a container restart to take effect.
 
