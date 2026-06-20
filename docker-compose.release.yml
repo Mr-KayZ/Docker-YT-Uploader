@@ -1,10 +1,10 @@
-# docker-compose.yml
-# This is just for local dev and testing. For production, use docker-compose.release.yml instead!
-# Usage: docker compose -f docker-compose.yml up -d
+# docker-compose.release.yml
+# For end users installing from GitHub Container Registry.
+# Usage: docker compose -f docker-compose.release.yml up -d
 
 services:
   yt-uploader:
-    build: .
+    image: ghcr.io/mr-kayz/docker-yt-uploader:latest
     container_name: docker-yt-uploader
     ports:
       - "4321:4321"

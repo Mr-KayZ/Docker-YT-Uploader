@@ -29,7 +29,7 @@ Before starting, make sure you have:
 2. In your WSL shell, verify Docker works
     ```bash
     docker version
-    docker run --rm hellow-world
+    docker run --rm hello-world
     ```
 If these commands run successfully, Docker is ready.
 
@@ -143,3 +143,15 @@ npm run <script-name>
 - Always run commands **inside WSL**, not in Powershell/CMD, unless explicitly stated.
 - For best performance, keep the repository inside the Linux filesystem (e.g. `/home/user/Docker-YT-Uploader`)
 - If Docker commands fail in WSL, ensure Docker Desktop is running and WSL integration is enabled.
+
+## 10. Releasing new versions
+The github workflow now contains a release mechanism that gets triggered by version tags. With new version tag updates, a new docker image will be generated. This will not affect normal commits to main.
+
+To update tags, make sure to use git terminal: `git tag <version>`, and then `git push origin <version>`.
+
+Once that is done, you need to create a release page with the changelongs:
+- Releases -> Draft a new release
+- Choose the tag (such as `v0.9.1`)
+- Write the release notes (what changed, what's known-broken, regressions, etc.)
+- No need to attach anything as the docker image is aleady published to GHCR
+- Hit Publish
