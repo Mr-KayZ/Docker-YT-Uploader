@@ -88,7 +88,6 @@ The container is designed to run persistently alongside other services on a NAS 
 ## Features
 > Note: Features, planned or otherwise, are subject to change as the project evolves.
 
-### Key Features
 - **Web interface for metadata editing** - Title, description, tags, category, privacy, schedule
 - **Folder watch** - Files appearing in the configured watch folder are detected automatically and surfaced in the web UI
 - **Upload history view** - Shows previously uploaded videos from your YouTube channel
@@ -99,9 +98,6 @@ The container is designed to run persistently alongside other services on a NAS 
 - **Upload info panel** - Fixed bottom-left pane showing active upload status, live progress bar, upload speed, and current API quota usage vs. daily limit
 - **Playlist support** - Pulls your existing YouTube playlists via the API so you can assign a video to one or more playlists at upload time
 - **Docker log viewer** - Dedicated page showing live console output from the container for debugging and upload monitoring
-
-### Planned Features
-These are on the roadmap for a future release:
 - **Upload progress indicator** - Live progress bar with estimated time remaining and a spinner while the upload is in flight
 - **Resumable uploads** - Leverages the YouTube Data API v3's resumable upload sessions, essential for large files where a mid-upload failure would otherwise require starting over
 - **Queue management** - Queue multiple videos, reorder them, pause, or cancel pending uploads
