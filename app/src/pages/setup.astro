@@ -1,14 +1,13 @@
 ---
 // app/src/pages/setup.astro
 import AppLayout from "../layouts/AppLayout.astro";
-
 import {
   hasClientSecret,
   hasTokens,
-  loadClientSecret,
   saveClientSecret,
   createOAuthClient,
   saveTokens,
+  getAuthenticatedClient, // ← add here, remove dynamic import below
   SCOPES,
 } from "../lib/auth.ts";
 
@@ -21,9 +20,7 @@ let channelName: string | null = null;
 if (clientSecretExists && tokensExist) {
   try {
     const { google } = await import("googleapis");
-    const client = await (
-      await import("../lib/auth.ts")
-    ).getAuthenticatedClient();
+    const client = await getAuthenticatedClient(); // ← no double import
     const yt = google.youtube({ version: "v3", auth: client });
     const res = await yt.channels.list({ part: ["snippet"], mine: true });
     channelName = res.data.items?.[0]?.snippet?.title ?? null;
@@ -52,8 +49,7 @@ if (Astro.request.method === "POST") {
     const data = await Astro.request.formData();
     const file = data.get("clientSecret") as File | null;
     if (!file || file.size === 0) throw new Error("No file received.");
-    const content = await file.text();
-    await saveClientSecret(content);
+    await saveClientSecret(await file.text());
     return Astro.redirect("/setup");
   } catch (err: unknown) {
     uploadError = err instanceof Error ? err.message : "Unknown error.";
@@ -63,13 +59,17 @@ if (Astro.request.method === "POST") {
 // Build Google OAuth URL (if secret exists but no tokens yet)
 //-------------------------------------------------------------------------------------------------
 let authUrl: string | null = null;
-if (clientSecretExists && !tokensExist) {
-  const client = await createOAuthClient();
-  authUrl = client.generateAuthUrl({
-    access_type: "offline",
-    scope: SCOPES,
-    prompt: "consent",
-  });
+if (clientSecretExists) {
+  try {
+    const client = await createOAuthClient();
+    authUrl = client.generateAuthUrl({
+      access_type: "offline",
+      scope: SCOPES,
+      prompt: "consent",
+    });
+  } catch {
+    authUrl = null;
+  } // ← guard the URL generation too
 }
 ---
 
@@ -79,10 +79,14 @@ if (clientSecretExists && !tokensExist) {
     main {
       min-height: calc(100vh - 53px);
       display: flex;
+      flex-direction: column;
       align-items: center;
       justify-content: center;
+      gap: 1.25rem;
       padding: 2rem 1rem;
     }
+
+    /* Shared card shell */
     .setup-card {
       background: white;
       border: 1px solid #e5e5e5;
@@ -92,6 +96,121 @@ if (clientSecretExists && !tokensExist) {
       max-width: 480px;
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
     }
+
+    /* Mount config card */
+    .mount-card-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 0.25rem;
+    }
+    .mount-card-desc {
+      font-size: 0.82rem;
+      color: #666;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
+    .mount-field {
+      margin-bottom: 1rem;
+    }
+    .mount-field label {
+      display: block;
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: #444;
+      margin-bottom: 0.35rem;
+    }
+    .mount-field input[type="text"] {
+      width: 100%;
+      padding: 0.5rem 0.75rem;
+      border: 1px solid #d1d5db;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-family: monospace;
+      color: #1a1a1a;
+      background: white;
+    }
+    .mount-field input[type="text"]:focus {
+      outline: none;
+      border-color: #1a1a1a;
+      box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
+    }
+    .mount-field .field-hint {
+      font-size: 0.75rem;
+      color: #999;
+      margin-top: 0.3rem;
+    }
+    .optional {
+      font-weight: 400;
+      color: #aaa;
+    }
+    .mount-actions {
+      display: flex;
+      gap: 0.75rem;
+      justify-content: flex-end;
+      margin-top: 1.25rem;
+    }
+    .mount-status {
+      font-size: 0.82rem;
+      padding: 0.5rem 0.75rem;
+      border-radius: 6px;
+      margin-top: 0.75rem;
+      display: none; /* shown by JS */
+    }
+    .mount-status.success {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      display: block;
+    }
+    .mount-status.error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+    .mount-status.info {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      display: block;
+    }
+    .active-paths {
+      margin-top: 1rem;
+      padding: 0.75rem 1rem;
+      background: #f8f8f8;
+      border: 1px solid #ebebeb;
+      border-radius: 8px;
+    }
+    .active-paths-label {
+      font-size: 0.7rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: #aaa;
+      margin-bottom: 0.5rem;
+    }
+    .path-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.2rem;
+      font-size: 0.8rem;
+    }
+    .path-label {
+      color: #888;
+      min-width: 48px;
+      flex-shrink: 0;
+    }
+    .path-row code {
+      background: #e8e8e8;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+
+    /* OAuth wizard card */
     .setup-card header {
       border: none;
       padding: 0;
@@ -108,7 +227,6 @@ if (clientSecretExists && !tokensExist) {
     .progress-steps {
       display: flex;
       align-items: center;
-      gap: 0;
       margin-bottom: 1.75rem;
     }
     .progress-step {
@@ -221,6 +339,74 @@ if (clientSecretExists && !tokensExist) {
 
   <!-- Setup card - identical logic and markup to before, now inside AppLayout -->
   <main>
+    <!---- Mount Point Configuration (always visible, above the OAuth wizard) ---->
+    <div class="setup-card">
+      <p class="mount-card-title">Mount Points</p>
+      <p class="mount-card-desc">
+        Configure the folders the app watches for videos and stores credentials
+        in. Changes take effect after restarting the container.
+      </p>
+
+      <div class="mount-field">
+        <label for="videosDir">
+          Videos folder <span class="optional">(watched for new uploads)</span>
+        </label>
+        <input
+          type="text"
+          id="videosDir"
+          placeholder="Loading…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <p class="field-hint">
+          Absolute path inside the container, e.g. <code>/videos</code>
+        </p>
+      </div>
+
+      <div class="mount-field">
+        <label for="authDir">
+          Auth folder <span class="optional"
+            >(stores client_secret.json &amp; tokens.json)</span
+          >
+        </label>
+        <input
+          type="text"
+          id="authDir"
+          placeholder="Loading…"
+          autocomplete="off"
+          spellcheck="false"
+        />
+        <p class="field-hint">
+          Absolute path inside the container, e.g. <code>/auth</code>
+        </p>
+      </div>
+
+      <div class="mount-status" id="mountStatus"></div>
+
+      <div class="mount-actions">
+        <button class="btn btn-secondary" id="mountResetBtn"
+          >Reset to defaults</button
+        >
+        <button class="btn btn-primary" id="mountSaveBtn">Save paths</button>
+      </div>
+
+      <div class="active-paths">
+        <p class="active-paths-label">Currently active (restart to update)</p>
+        <div class="path-row">
+          <span class="path-label">Videos</span><code id="activeVideos">—</code>
+        </div>
+        <div class="path-row">
+          <span class="path-label">Auth</span>
+          <code id="activeAuth">—</code>
+        </div>
+        <div class="path-row">
+          <span class="path-label">Data</span>
+          <code id="activeData">—</code>
+        </div>
+      </div>
+    </div>
+
+    <!---- OAuth Wizard ---->
     <div class="setup-card">
       <header>
         <svg
@@ -237,21 +423,20 @@ if (clientSecretExists && !tokensExist) {
       </header>
 
       <!-- Progress indicator -->
-      <div class="progress-steps">
-        <div class={`progress-step ${clientSecretExists ? "done" : "active"}`}>
-          <div class="step-dot">{clientSecretExists ? "✓" : "1"}</div>
-          <span class="step-label">Credentials</span>
-        </div>
-        <div
-          class={`progress-step ${tokensExist ? "done" : clientSecretExists ? "active" : ""}`}
-        >
-          <div class="step-dot">{tokensExist ? "✓" : "2"}</div>
-          <span class="step-label">Authenticate</span>
-        </div>
-        <div class={`progress-step ${tokensExist ? "active" : ""}`}>
-          <div class="step-dot">{tokensExist ? "✓" : "3"}</div>
-          <span class="step-label">Ready</span>
-        </div>
+      <div class={`progress-step ${clientSecretExists ? "done" : "active"}`}>
+        <div class="step-dot">{clientSecretExists ? "✓" : "1"}</div>
+        <span class="step-label">Credentials</span>
+      </div>
+      <div
+        class={`progress-step ${tokensExist ? "done" : clientSecretExists ? "active" : ""}`}
+      >
+        <div class="step-dot">{tokensExist ? "✓" : "2"}</div>
+        <span class="step-label">Authenticate</span>
+      </div>
+      <!-- Step 3: done when complete, no "active" — it's the terminal step -->
+      <div class={`progress-step ${tokensExist ? "done" : ""}`}>
+        <div class="step-dot">{tokensExist ? "✓" : "3"}</div>
+        <span class="step-label">Ready</span>
       </div>
 
       {uploadError && <div class="error-msg">⚠ {uploadError}</div>}
@@ -295,6 +480,7 @@ if (clientSecretExists && !tokensExist) {
                 id="setupFileInput"
                 name="clientSecret"
                 accept=".json"
+                style="display:none"
               />
               <button
                 class="btn btn-primary"
@@ -312,16 +498,13 @@ if (clientSecretExists && !tokensExist) {
 
       <!-- Step 2: Connect YouTube account -->
       {
-        clientSecretExists && !tokensExist && (
+        clientSecretExists && !tokensExist && authUrl && (
           <div>
             <div class="success-badge">✓ Credentials uploaded</div>
             <hr class="divider" />
             <p class="section-title">Connect your YouTube account</p>
-            <p class="section-desc">
-              Click below to sign in with Google and grant access to your
-              YouTube channel. You'll be redirected back automatically.
-            </p>
-            <a class="btn btn-primary" href={authUrl!}>
+            <p class="section-desc">...</p>
+            <a class="btn btn-primary" href={authUrl}>
               Connect YouTube Account
             </a>
           </div>
@@ -343,9 +526,11 @@ if (clientSecretExists && !tokensExist) {
             <a class="btn btn-primary" href="/">
               Go to Dashboard
             </a>
-            <a class="re-auth-link" href={authUrl ?? "/setup"}>
-              Re-authenticate with a different account
-            </a>
+            {authUrl && (
+              <a class="re-auth-link" href={authUrl}>
+                Re-authenticate with a different account
+              </a>
+            )}
           </div>
         )
       }
@@ -353,17 +538,111 @@ if (clientSecretExists && !tokensExist) {
   </main>
 
   <script>
-    // Drop zone wiring for the credential upload
+    // Mount config
+    //---------------------------------------------------------------------------------------------
+    const videosInput = document.getElementById(
+      "videosDir",
+    ) as HTMLInputElement;
+    const authInput = document.getElementById("authDir") as HTMLInputElement;
+    const mountSaveBtn = document.getElementById(
+      "mountSaveBtn",
+    ) as HTMLButtonElement;
+    const mountResetBtn = document.getElementById(
+      "mountResetBtn",
+    ) as HTMLButtonElement;
+    const mountStatus = document.getElementById("mountStatus")!;
+    const activeVideos = document.getElementById("activeVideos")!;
+    const activeAuth = document.getElementById("activeAuth")!;
+    const activeData = document.getElementById("activeData")!;
+
+    function showMountStatus(msg: string, type: "success" | "error" | "info") {
+      mountStatus.textContent = msg;
+      mountStatus.className = `mount-status ${type}`;
+    }
+
+    async function loadMountConfig() {
+      try {
+        const res = await fetch("/api/mount-config");
+        const data = await res.json();
+        videosInput.value = data.saved?.videosDir ?? "";
+        authInput.value = data.saved?.authDir ?? "";
+        videosInput.placeholder = data.active.videosDir;
+        authInput.placeholder = data.active.authDir;
+        activeVideos.textContent = data.active.videosDir;
+        activeAuth.textContent = data.active.authDir;
+        activeData.textContent = data.active.dataDir;
+      } catch {
+        showMountStatus("Failed to load current mount configuration.", "error");
+      }
+    }
+
+    mountSaveBtn.addEventListener("click", async () => {
+      mountSaveBtn.disabled = true;
+      try {
+        const res = await fetch("/api/mount-config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            videosDir: videosInput.value.trim() || undefined,
+            authDir: authInput.value.trim() || undefined,
+          }),
+        });
+        const data = await res.json();
+        if (data.ok)
+          showMountStatus(
+            "✓ Saved. Restart the container to apply the new paths.",
+            "success",
+          );
+        else showMountStatus(`Error: ${data.error}`, "error");
+      } catch {
+        showMountStatus("Failed to save — check the server logs.", "error");
+      } finally {
+        mountSaveBtn.disabled = false;
+      }
+    });
+
+    mountResetBtn.addEventListener("click", async () => {
+      if (
+        !confirm(
+          "Reset both paths to their defaults (env vars or built-in fallbacks)?",
+        )
+      )
+        return;
+      videosInput.value = "";
+      authInput.value = "";
+      try {
+        const res = await fetch("/api/mount-config", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({}),
+        });
+        const data = await res.json();
+        if (data.ok) {
+          showMountStatus(
+            "✓ Reset to defaults. Restart the container to apply.",
+            "success",
+          );
+          await loadMountConfig(); // ← refresh displayed active paths
+        }
+      } catch {
+        showMountStatus("Reset failed — check the server logs.", "error");
+      }
+    });
+
+    loadMountConfig();
+
+    // Credential drop zone
+    //---------------------------------------------------------------------------------------------
     const zone = document.getElementById("setupDropZone");
-    const input = document.getElementById(
+    const fileInput = document.getElementById(
       "setupFileInput",
     ) as HTMLInputElement | null;
     const submitBtn = document.getElementById(
       "setupSubmitBtn",
     ) as HTMLButtonElement | null;
 
-    if (zone && input && submitBtn) {
-      zone.addEventListener("click", () => input.click());
+    if (zone && fileInput && submitBtn) {
+      zone.addEventListener("click", () => fileInput.click());
       zone.addEventListener("dragover", (e) => {
         e.preventDefault();
         zone.classList.add("dragover");
@@ -378,16 +657,16 @@ if (clientSecretExists && !tokensExist) {
         if (f) {
           const dt = new DataTransfer();
           dt.items.add(f);
-          input.files = dt.files;
+          fileInput.files = dt.files;
           zone.classList.add("has-file");
           zone.innerHTML = `<p style="color:#166534">✓ <strong>${f.name}</strong></p>`;
           submitBtn.disabled = false;
         }
       });
-      input.addEventListener("change", () => {
-        if (input.files?.[0]) {
+      fileInput.addEventListener("change", () => {
+        if (fileInput.files?.[0]) {
           zone.classList.add("has-file");
-          zone.innerHTML = `<p style="color:#166534">✓ <strong>${input.files[0].name}</strong></p>`;
+          zone.innerHTML = `<p style="color:#166534">✓ <strong>${fileInput.files[0].name}</strong></p>`;
           submitBtn.disabled = false;
         }
       });
