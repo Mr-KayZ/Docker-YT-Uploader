@@ -70,6 +70,7 @@ From the root folder, we run the following:
 ```bash
 cd app/
 npm install
+npx astro sync
 cd ..
 ```
 This installs all dependancies listed in `package.json` for the Astro app and any supporting tooling within the `app/` directory.

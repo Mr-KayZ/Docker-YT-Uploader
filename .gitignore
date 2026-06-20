@@ -10,9 +10,9 @@ dist/
 .env.*
 !.env.example
 
-# Upload folder contents (mount this as a volume, don't track files)
-uploads/*
-!uploads/.gitkeep
+# Videos folder contents (mount this as a volume, don't track files)
+videos/*
+!videos/.gitkeep
 
 # Docker
 *.log
@@ -27,3 +27,4 @@ Thumbs.db
 *.swp
 auth/client_secret.json
 auth/tokens.json
+Docker-YT-Test-media/*
