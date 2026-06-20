@@ -27,4 +27,3 @@ Thumbs.db
 *.swp
 auth/client_secret.json
 auth/tokens.json
-data/*
