@@ -201,6 +201,8 @@ The YouTube Data API v3 has a default quota of **10,000 units per day**. Each vi
 ## Development Status
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
 
+Want to contribute? Remember to create an issue and read the [wiki](https://github.com/Mr-KayZ/Docker-YT-Uploader/wiki/Development-Notes) to quickly get up to speed on how to set up the dev space locally!
+
 ### Roadmap
 
 | Version | Milestone | Status |
