@@ -627,7 +627,7 @@ const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
               <div>
                 <p class="section-title">Set your server address</p>
                 <p class="section-desc">
-                  Enter the address you use to access this page — you can copy
+                  Enter the address you use to access this page - you can copy
                   it straight from your browser's address bar. This is required
                   so Google knows where to redirect you after login.
                 </p>
@@ -947,7 +947,7 @@ const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
           });
           const data = await res.json();
           if (data.ok) {
-            // Reload the page — the server-rendered wizard will now show step 2
+            // Reload the page - the server-rendered wizard will now show step 2
             window.location.reload();
           } else {
             if (urlStatus) {
@@ -958,7 +958,7 @@ const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
           }
         } catch {
           if (urlStatus) {
-            urlStatus.textContent = "Failed to save — check the server logs.";
+            urlStatus.textContent = "Failed to save - check the server logs.";
             urlStatus.className = "mount-status error";
           }
           saveUrlBtn.disabled = false;

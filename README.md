@@ -28,7 +28,7 @@ docker compose -f docker-compose.release.yml up -d
 ```
 Once running, access the web UI at: **http://localhost:4321/setup**
 
-> **Note:** You will need to re-pull and recreate the container on the server if a new image is pushed manually:
+> **Note:** To update to a newer image, re-pull and recreate the container:
 ```bash
 docker compose -f docker-compose.release.yml pull
 docker compose -f docker-compose.release.yml up -d --force-recreate
@@ -69,21 +69,34 @@ This app requires you to create your own Google Cloud project to authenticate wi
 
 > **Important:** Download the JSON immediately - this is the only time the download option is shown. If you miss it, you will need to delete and recreate the credential.
 
-5. Rename the downloaded file to `client_secret.json` (Optional)
+5. Rename the downloaded file to `client_secret.json` (optional but recommended)
+
+#### Step 6 - Add an Authorised Redirect URI
+1. On the **Credentials** page, click the OAuth client ID you just created
+2. Under **Authorised redirect URIs**, click **+ Add URI**
+3. Enter: `http://<your-server-address>:4321/api/auth/callback`
+   - If running locally: `http://localhost:4321/api/auth/callback`
+   - If running on a server: `http://192.168.1.50:4321/api/auth/callback` (use your server's actual IP)
+4. Click **Save**
+
+> This URI must match exactly what the app uses. The setup wizard will show you the exact URI once you enter your server address in Step 1 of the setup page.
 
 ### 4. First-Run Setup
 
-Navigate to `http://localhost:4321/setup` in your browser if set up locally, or `http://<server-IP-address>:4321` if set up on a server (VM or otherwise). If no credentials are detected, you will be automatically redirected there. The setup page walks through two required steps before the uploader is accessible:
+Navigate to `http://localhost:4321/setup` in your browser if running locally, or `http://<server-IP>:4321/setup` if running on a remote server. If no credentials are detected, you will be automatically redirected there.
 
-1. **Type in you server IP address** by typing into the 
-1. **Upload your `client_secret.json`** via drag-and-drop or the file browser
-2. **Click "Connect YouTube Account"** to be redirected to Google's OAuth consent screen - sign in and approve access, and you will be returned to the setup page automatically
+The setup page walks through a four-step wizard before the uploader is accessible:
 
-Once all three steps are complete, the **Ready to proceed?** card becomes active and you can navigate to the uploader. The middleware blocks access to all non-setup routes until both credentials and tokens are present.
+1. **Set your server address** - Enter the address you use to reach this page (you can copy it straight from your browser's address bar). This is required so Google knows where to redirect you after login. The wizard will display the exact redirect URI to register in Google Cloud Console.
+2. **Upload your `client_secret.json`** - via drag-and-drop or the file browser
+3. **Click "Connect YouTube Account"** - you will be redirected to Google's OAuth consent screen; sign in and approve access, and you will be returned to the setup page automatically
+4. **Ready** - the **Ready to proceed?** card becomes active and you can navigate to the uploader
+
+The middleware blocks access to all non-setup routes until all steps are complete.
 
 A `tokens.json` file is saved to the `auth/` volume automatically. This only needs to be done once; tokens are refreshed automatically by the app going forward.
 
-> Note: `client_secret.json` and `tokens.json` are listed in `.gitignore` and will never be committed. Never share these files publicly.
+> **Note:** `client_secret.json` and `tokens.json` are listed in `.gitignore` and will never be committed. Never share these files publicly.
 
 ***
 
@@ -117,7 +130,7 @@ The container is designed to run persistently alongside other services on a NAS 
 - **Sidecar JSON for metadata** - Optional `.meta.json` files per video for pre-filling metadata fields
 - **Thumbnail upload support** - Custom thumbnail selection and upload via the API
 - **In-browser upload notifications** - On upload completion, a toast shows the video title and a direct YouTube link; all notifications persist in a bell icon popover in the header
-- **Browser-based OAuth setup** - Upload your `client_secret.json` and authenticate entirely through the web UI; no CLI or manual file placement required
+- **Browser-based OAuth setup** - Enter your server address, upload your `client_secret.json`, and authenticate entirely through the web UI; no CLI or manual file placement required
 - **Upload info panel** - Fixed bottom-left pane showing active upload status, live progress bar, upload speed, and current API quota usage vs. daily limit
 - **Playlist support** - Pulls your existing YouTube playlists via the API so you can assign a video to one or more playlists at upload time
 - **Docker log viewer** - Dedicated page showing live console output from the container for debugging and upload monitoring
@@ -132,7 +145,7 @@ The container is designed to run persistently alongside other services on a NAS 
 
 ## Docker Configuration
 
-> **Note:** Resource limits and environment variable configuration will be documented here as the project matures.
+> **Note:** Resource limits and additional environment variable configuration will be documented here as the project matures.
 
 ### Volume Mounts
 
@@ -167,6 +180,20 @@ docker run -p 4321:4321 \
 ```
 
 > Mount paths can be changed in the Setup UI under **Mount Points**. Saved changes apply on the next container restart. The active paths shown in the UI reflect what the currently running container was started with.
+
+### Environment Variables
+
+| Variable | Required | Default | Description |
+|---|---|---|---|
+| `NODE_ENV` | No | `production` | Node environment |
+| `HOST` | No | `0.0.0.0` | Interface the server binds to |
+| `PORT` | No | `4321` | Port the server listens on |
+| `AUTH_DIR` | No | `/auth` | Path to the auth volume inside the container |
+| `DATA_DIR` | No | `/data` | Path to the data volume inside the container |
+| `VIDEOS_DIR` | No | `/videos` | Path to the videos volume inside the container |
+| `PUBLIC_URL` | No | *(set via setup UI)* | The externally reachable base URL of this instance (e.g. `http://192.168.1.50:4321`). If set, skips the server address step in the setup wizard. Useful for automated or headless deployments. |
+
+> `PUBLIC_URL` is not required if you set your server address through the setup wizard UI. Only set it in your compose file if you prefer to pre-configure it without using the UI.
 
 ### Sidecar Metadata (`.meta.json`)
 
@@ -223,7 +250,8 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 | 0.7.0 | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | Complete |
 | 0.8.0 | Sidecar `.meta.json` support - auto-fill metadata form from file | Complete |
 | 0.9.0 | Mount point configuration - setup UI for watched folder, auth, and data directories | Complete |
-| 0.9.1 | Setup UX polish - proceed card, OAuth callback redirect fix, button alignment fixes | Complete |
+| 0.9.1 | Setup UX polish - proceed card, button alignment fixes | Complete |
+| 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI | Complete |
 | 0.9.2 | Resumable uploads + live upload progress indicator + spinner (bottom-left card) | In Progress |
 | 0.9.3 | Upload info panel - progress bar, upload speed, quota usage | Planned |
 | 0.9.4 | In-browser notifications - toast on completion + bell popover with history | Planned |
@@ -232,7 +260,7 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 | 0.9.7 | Docker log viewer - dedicated page for live container console output | Planned |
 | 0.9.8 | Additional notification channels - webhooks, ntfy, Gotify | Planned |
 | 0.9.9 | Drag-and-drop video upload directly into the web UI | Planned |
-| 0.9.10 | Final bug fixing round (see Fixes to Implement) and testing | Planned |
+| 0.9.10 | Final bug fixing round and testing | Planned |
 | 1.0.0 | All key and planned features complete; end-to-end Docker tested | Target |
 
 > Remember to tag releases with `git tag <version>` and `git push origin <version>` to trigger the Docker image build on GitHub Actions.
@@ -240,17 +268,10 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 ### Fixes to Implement
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
-- **Verify solo Docker container operation** - Confirm the app works correctly as a standalone Docker image; build and test independent of Compose
-  - Major Bug: Redirect appears to break the docker container!
-  - When doing live testing with the container from an actual NAS environment (Debian VM with docker), initially the webUI does load from the client computer connecting to the server `http://<IP Address of server>:4321`
-  - However when the user clicks "Upload Credentials", the Google OAuth redirect leads back to `localhost` of the client computer and not the server.
-  - Reconnecting back to `http://<IP Address of server>:4321`, it only shows the same page as Upload Credentials, the authentication (and therefore token creation) never happened.
-  - When this is fixed, release tag 0.9.1.1
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
 - **Tooltips on icon buttons** - Header icon buttons (bell, logs, etc.) should show a descriptive tooltip on hover
 - **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should appear in the bell popover history
-- **Fix webclient to be accessible everywhere** - Reconfirm that this docker image can have its webclient reached via simple IP address instead.
 - **Have a settings page** - Allows changing of ports, updating of app (if possible), etc.
-- **Introduce hardening** - Look into making it more secure for multi-user or production ready environments
+- **Introduce hardening** - Look into making it more secure for multi-user or production-ready environments

@@ -25,7 +25,7 @@ export function normalisePublicUrl(raw: string): string {
   // If user typed a bare IP with no explicit port, default to 4321
   if (!u.port) u.port = "4321";
 
-  // Return just origin (protocol + host + port) — no path
+  // Return just origin (protocol + host + port) - no path
   return u.origin;
 }
 
@@ -36,7 +36,7 @@ export async function getPublicUrl(): Promise<string> {
       const raw = JSON.parse(await readFile(CONFIG_PATH, "utf-8"));
       if (raw?.publicUrl) return raw.publicUrl;
     } catch {
-      // corrupt file — fall through
+      // corrupt file - fall through
     }
   }
   // 2. Env var (power users / CI)
