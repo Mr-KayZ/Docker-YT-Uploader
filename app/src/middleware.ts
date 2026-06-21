@@ -11,6 +11,7 @@ const PUBLIC_PATHS = [
   "/api/auth/start",
   "/api/auth/callback",
   "/api/mount-config",
+  "/api/config/public-url",
 ];
 
 // Define the middleware function to check authentication

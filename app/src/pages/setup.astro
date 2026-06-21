@@ -1,6 +1,7 @@
 ---
 // app/src/pages/setup.astro
 import AppLayout from "../layouts/AppLayout.astro";
+import { hasPublicUrl, getPublicUrl } from "../lib/config.ts";
 import {
   hasClientSecret,
   hasTokens,
@@ -13,6 +14,8 @@ import {
 
 const clientSecretExists = hasClientSecret();
 const tokensExist = hasTokens();
+const publicUrlSet = await hasPublicUrl();
+const currentPublicUrl = await getPublicUrl();
 
 let channelName: string | null = null;
 if (clientSecretExists && tokensExist) {
@@ -64,7 +67,7 @@ if (clientSecretExists) {
   }
 }
 
-const setupComplete = clientSecretExists && tokensExist;
+const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
 ---
 
 <AppLayout title="Setup - Docker-YT-Uploader">
@@ -102,7 +105,9 @@ const setupComplete = clientSecretExists && tokensExist;
       align-items: start;
     }
     @media (max-width: 700px) {
-      .panels { grid-template-columns: 1fr; }
+      .panels {
+        grid-template-columns: 1fr;
+      }
     }
 
     /* Left column spans all rows */
@@ -139,7 +144,9 @@ const setupComplete = clientSecretExists && tokensExist;
     }
 
     /* -- Mount fields -- */
-    .mount-field { margin-bottom: 1rem; }
+    .mount-field {
+      margin-bottom: 1rem;
+    }
     .mount-field label {
       display: block;
       font-size: 0.82rem;
@@ -163,8 +170,15 @@ const setupComplete = clientSecretExists && tokensExist;
       border-color: #1a1a1a;
       box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.06);
     }
-    .field-hint { font-size: 0.75rem; color: #999; margin-top: 0.3rem; }
-    .optional { font-weight: 400; color: #aaa; }
+    .field-hint {
+      font-size: 0.75rem;
+      color: #999;
+      margin-top: 0.3rem;
+    }
+    .optional {
+      font-weight: 400;
+      color: #aaa;
+    }
 
     .mount-actions {
       display: flex;
@@ -192,14 +206,43 @@ const setupComplete = clientSecretExists && tokensExist;
       margin-top: 0.75rem;
       display: none;
     }
-    .mount-status.success { background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0; display: block; }
-    .mount-status.error   { background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5; display: block; }
-    .mount-status.info    { background: #eff6ff; color: #1e40af; border: 1px solid #bfdbfe; display: block; }
+    .mount-status.success {
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      display: block;
+    }
+    .mount-status.error {
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      display: block;
+    }
+    .mount-status.info {
+      background: #eff6ff;
+      color: #1e40af;
+      border: 1px solid #bfdbfe;
+      display: block;
+    }
 
-    .path-readouts { margin-top: 1rem; display: flex; flex-direction: column; gap: 0.6rem; }
-    .path-section { padding: 0.65rem 0.9rem; border-radius: 8px; border: 1px solid #ebebeb; }
-    .path-section.saved-section  { background: #f8f8f8; }
-    .path-section.active-section { background: #fffbeb; border-color: #fde68a; }
+    .path-readouts {
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+    .path-section {
+      padding: 0.65rem 0.9rem;
+      border-radius: 8px;
+      border: 1px solid #ebebeb;
+    }
+    .path-section.saved-section {
+      background: #f8f8f8;
+    }
+    .path-section.active-section {
+      background: #fffbeb;
+      border-color: #fde68a;
+    }
     .path-section-label {
       font-size: 0.7rem;
       font-weight: 600;
@@ -208,12 +251,35 @@ const setupComplete = clientSecretExists && tokensExist;
       color: #aaa;
       margin-bottom: 0.4rem;
     }
-    .active-section .path-section-label { color: #92400e; }
-    .path-row { display: flex; align-items: baseline; gap: 0.5rem; margin-bottom: 0.15rem; font-size: 0.8rem; }
-    .path-row:last-child { margin-bottom: 0; }
-    .path-label { color: #888; min-width: 48px; flex-shrink: 0; }
-    .path-row code { background: #e8e8e8; padding: 0.1rem 0.4rem; border-radius: 4px; font-size: 0.78rem; word-break: break-all; }
-    .active-section .path-row code { background: #fde68a; color: #78350f; }
+    .active-section .path-section-label {
+      color: #92400e;
+    }
+    .path-row {
+      display: flex;
+      align-items: baseline;
+      gap: 0.5rem;
+      margin-bottom: 0.15rem;
+      font-size: 0.8rem;
+    }
+    .path-row:last-child {
+      margin-bottom: 0;
+    }
+    .path-label {
+      color: #888;
+      min-width: 48px;
+      flex-shrink: 0;
+    }
+    .path-row code {
+      background: #e8e8e8;
+      padding: 0.1rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.78rem;
+      word-break: break-all;
+    }
+    .active-section .path-row code {
+      background: #fde68a;
+      color: #78350f;
+    }
 
     /* -- OAuth wizard -- */
     .progress-steps {
@@ -242,38 +308,95 @@ const setupComplete = clientSecretExists && tokensExist;
       background: #e5e5e5;
       z-index: 0;
     }
-    .progress-step.done::after { background: #1a1a1a; }
+    .progress-step.done::after {
+      background: #1a1a1a;
+    }
     .step-dot {
-      width: 28px; height: 28px;
+      width: 28px;
+      height: 28px;
       border-radius: 50%;
       border: 2px solid #e5e5e5;
       background: white;
-      display: flex; align-items: center; justify-content: center;
-      font-size: 0.75rem; font-weight: 600; color: #aaa;
-      position: relative; z-index: 1; flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #aaa;
+      position: relative;
+      z-index: 1;
+      flex-shrink: 0;
     }
-    .progress-step.done   .step-dot { background: #1a1a1a; border-color: #1a1a1a; color: white; }
-    .progress-step.active .step-dot { border-color: #1a1a1a; color: #1a1a1a; }
-    .step-label { font-size: 0.7rem; color: #aaa; text-align: center; white-space: nowrap; }
-    .progress-step.done   .step-label { color: #1a1a1a; }
-    .progress-step.active .step-label { color: #1a1a1a; font-weight: 600; }
+    .progress-step.done .step-dot {
+      background: #1a1a1a;
+      border-color: #1a1a1a;
+      color: white;
+    }
+    .progress-step.active .step-dot {
+      border-color: #1a1a1a;
+      color: #1a1a1a;
+    }
+    .step-label {
+      font-size: 0.7rem;
+      color: #aaa;
+      text-align: center;
+      white-space: nowrap;
+    }
+    .progress-step.done .step-label {
+      color: #1a1a1a;
+    }
+    .progress-step.active .step-label {
+      color: #1a1a1a;
+      font-weight: 600;
+    }
 
-    .section-title { font-size: 0.95rem; font-weight: 600; color: #1a1a1a; margin-bottom: 0.35rem; }
-    .section-desc  { font-size: 0.82rem; color: #666; margin-bottom: 1.25rem; line-height: 1.5; }
+    .section-title {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #1a1a1a;
+      margin-bottom: 0.35rem;
+    }
+    .section-desc {
+      font-size: 0.82rem;
+      color: #666;
+      margin-bottom: 1.25rem;
+      line-height: 1.5;
+    }
     .success-badge {
-      display: inline-flex; align-items: center; gap: 0.4rem;
-      background: #f0fdf4; color: #166534; border: 1px solid #bbf7d0;
-      border-radius: 6px; font-size: 0.82rem; font-weight: 500;
-      padding: 0.4rem 0.75rem; margin-bottom: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: #f0fdf4;
+      color: #166534;
+      border: 1px solid #bbf7d0;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      font-weight: 500;
+      padding: 0.4rem 0.75rem;
+      margin-bottom: 1rem;
     }
     .error-msg {
-      background: #fef2f2; color: #991b1b; border: 1px solid #fca5a5;
-      border-radius: 6px; font-size: 0.82rem; padding: 0.6rem 0.9rem; margin-bottom: 1rem;
+      background: #fef2f2;
+      color: #991b1b;
+      border: 1px solid #fca5a5;
+      border-radius: 6px;
+      font-size: 0.82rem;
+      padding: 0.6rem 0.9rem;
+      margin-bottom: 1rem;
     }
-    .divider { border: none; border-top: 1px solid #f0f0f0; margin: 1.25rem 0; }
+    .divider {
+      border: none;
+      border-top: 1px solid #f0f0f0;
+      margin: 1.25rem 0;
+    }
     .re-auth-link {
-      display: block; text-align: center; margin-top: 0.75rem;
-      font-size: 0.8rem; color: #888; text-decoration: underline; cursor: pointer;
+      display: block;
+      text-align: center;
+      margin-top: 0.75rem;
+      font-size: 0.8rem;
+      color: #888;
+      text-decoration: underline;
+      cursor: pointer;
     }
 
     /* -- Proceed card -- */
@@ -316,8 +439,14 @@ const setupComplete = clientSecretExists && tokensExist;
       font-size: 0.65rem;
       font-weight: 700;
     }
-    .check-icon.done  { background: #dcfce7; color: #166534; }
-    .check-icon.todo  { background: #f3f4f6; color: #9ca3af; }
+    .check-icon.done {
+      background: #dcfce7;
+      color: #166534;
+    }
+    .check-icon.todo {
+      background: #f3f4f6;
+      color: #9ca3af;
+    }
     .proceed-note {
       font-size: 0.78rem;
       color: #888;
@@ -339,10 +468,14 @@ const setupComplete = clientSecretExists && tokensExist;
       cursor: pointer;
       background: #1a1a1a;
       color: white;
-      transition: background 0.15s, opacity 0.15s;
+      transition:
+        background 0.15s,
+        opacity 0.15s;
       box-sizing: border-box;
     }
-    .btn-proceed:hover:not(.disabled) { background: #333; }
+    .btn-proceed:hover:not(.disabled) {
+      background: #333;
+    }
     .btn-proceed.disabled {
       background: #d1d5db;
       color: #9ca3af;
@@ -353,7 +486,13 @@ const setupComplete = clientSecretExists && tokensExist;
 
   <main>
     <div class="page-header">
-      <svg width="28" height="28" viewBox="0 0 32 32" fill="none" aria-label="Docker-YT-Uploader">
+      <svg
+        width="28"
+        height="28"
+        viewBox="0 0 32 32"
+        fill="none"
+        aria-label="Docker-YT-Uploader"
+      >
         <rect width="32" height="32" rx="8" fill="#1a1a1a"></rect>
         <polygon points="12,10 24,16 12,22" fill="white"></polygon>
       </svg>
@@ -361,7 +500,6 @@ const setupComplete = clientSecretExists && tokensExist;
     </div>
 
     <div class="panels">
-
       <!-- LEFT: Mount Points -->
       <div class="setup-card">
         <p class="card-title">Mount Points</p>
@@ -373,17 +511,32 @@ const setupComplete = clientSecretExists && tokensExist;
 
         <div class="mount-field">
           <label for="videosDir">
-            Videos folder <span class="optional">(watched for new uploads)</span>
+            Videos folder <span class="optional">(watched for new uploads)</span
+            >
           </label>
-          <input type="text" id="videosDir" placeholder="/videos" autocomplete="off" spellcheck="false" />
+          <input
+            type="text"
+            id="videosDir"
+            placeholder="/videos"
+            autocomplete="off"
+            spellcheck="false"
+          />
           <p class="field-hint">e.g. <code>/videos</code></p>
         </div>
 
         <div class="mount-field">
           <label for="authDir">
-            Auth folder <span class="optional">(stores credentials &amp; tokens)</span>
+            Auth folder <span class="optional"
+              >(stores credentials &amp; tokens)</span
+            >
           </label>
-          <input type="text" id="authDir" placeholder="/auth" autocomplete="off" spellcheck="false" />
+          <input
+            type="text"
+            id="authDir"
+            placeholder="/auth"
+            autocomplete="off"
+            spellcheck="false"
+          />
           <p class="field-hint">e.g. <code>/auth</code></p>
         </div>
 
@@ -391,109 +544,218 @@ const setupComplete = clientSecretExists && tokensExist;
           <label for="dataDir">
             Data folder <span class="optional">(stores queue &amp; state)</span>
           </label>
-          <input type="text" id="dataDir" placeholder="/data" autocomplete="off" spellcheck="false" />
+          <input
+            type="text"
+            id="dataDir"
+            placeholder="/data"
+            autocomplete="off"
+            spellcheck="false"
+          />
           <p class="field-hint">e.g. <code>/data</code></p>
         </div>
 
         <div class="mount-status" id="mountStatus"></div>
 
         <div class="mount-actions">
-          <button class="btn btn-secondary" id="mountResetBtn">Reset to defaults</button>
+          <button class="btn btn-secondary" id="mountResetBtn"
+            >Reset to defaults</button
+          >
           <button class="btn btn-primary" id="mountSaveBtn">Save paths</button>
         </div>
 
         <div class="path-readouts">
           <div class="path-section saved-section">
             <p class="path-section-label">Saved - applies on next restart</p>
-            <div class="path-row"><span class="path-label">Videos</span><code id="savedVideos">-</code></div>
-            <div class="path-row"><span class="path-label">Auth</span><code id="savedAuth">-</code></div>
-            <div class="path-row"><span class="path-label">Data</span><code id="savedData">-</code></div>
+            <div class="path-row">
+              <span class="path-label">Videos</span><code id="savedVideos"
+                >-</code>
+            </div>
+            <div class="path-row">
+              <span class="path-label">Auth</span><code id="savedAuth">-</code>
+            </div>
+            <div class="path-row">
+              <span class="path-label">Data</span><code id="savedData">-</code>
+            </div>
           </div>
           <div class="path-section active-section">
             <p class="path-section-label">Active - current running container</p>
-            <div class="path-row"><span class="path-label">Videos</span><code id="activeVideos">-</code></div>
-            <div class="path-row"><span class="path-label">Auth</span><code id="activeAuth">-</code></div>
-            <div class="path-row"><span class="path-label">Data</span><code id="activeData">-</code></div>
+            <div class="path-row">
+              <span class="path-label">Videos</span><code id="activeVideos"
+                >-</code>
+            </div>
+            <div class="path-row">
+              <span class="path-label">Auth</span><code id="activeAuth">-</code>
+            </div>
+            <div class="path-row">
+              <span class="path-label">Data</span><code id="activeData">-</code>
+            </div>
           </div>
         </div>
       </div>
 
       <!-- RIGHT column: OAuth card + Proceed card stacked -->
       <div class="col-right">
-
         <!-- OAuth Wizard -->
         <div class="setup-card">
           <div class="progress-steps">
-            <div class={`progress-step ${clientSecretExists ? "done" : "active"}`}>
-              <div class="step-dot">{clientSecretExists ? "✓" : "1"}</div>
+            <div class={`progress-step ${publicUrlSet ? "done" : "active"}`}>
+              <div class="step-dot">{publicUrlSet ? "✓" : "1"}</div>
+              <span class="step-label">Server URL</span>
+            </div>
+            <div
+              class={`progress-step ${clientSecretExists ? "done" : publicUrlSet ? "active" : ""}`}
+            >
+              <div class="step-dot">{clientSecretExists ? "✓" : "2"}</div>
               <span class="step-label">Credentials</span>
             </div>
-            <div class={`progress-step ${tokensExist ? "done" : clientSecretExists ? "active" : ""}`}>
-              <div class="step-dot">{tokensExist ? "✓" : "2"}</div>
+            <div
+              class={`progress-step ${tokensExist ? "done" : clientSecretExists ? "active" : ""}`}
+            >
+              <div class="step-dot">{tokensExist ? "✓" : "3"}</div>
               <span class="step-label">Authenticate</span>
             </div>
             <div class={`progress-step ${tokensExist ? "done" : ""}`}>
-              <div class="step-dot">{tokensExist ? "✓" : "3"}</div>
+              <div class="step-dot">{tokensExist ? "✓" : "4"}</div>
               <span class="step-label">Ready</span>
             </div>
           </div>
 
           {uploadError && <div class="error-msg">⚠ {uploadError}</div>}
 
-          {!clientSecretExists && (
-            <div>
-              <p class="section-title">Upload your credentials</p>
-              <p class="section-desc">
-                Download your <code>client_secret.json</code> from Google Cloud
-                Console, then upload it here to get started.
-              </p>
-              <form method="POST" enctype="multipart/form-data">
-                <div class="drop-zone" id="setupDropZone">
-                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9ca3af"
-                    stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"
-                    style="margin:0 auto 0.4rem">
-                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                    <polyline points="17 8 12 3 7 8" />
-                    <line x1="12" y1="3" x2="12" y2="15" />
-                  </svg>
-                  <p><strong>Drop client_secret.json here</strong> or click to browse</p>
-                  <p class="drop-hint">Must be a valid Google OAuth2 credential file.</p>
+          {
+            !publicUrlSet && (
+              <div>
+                <p class="section-title">Set your server address</p>
+                <p class="section-desc">
+                  Enter the address you use to access this page — you can copy
+                  it straight from your browser's address bar. This is required
+                  so Google knows where to redirect you after login.
+                </p>
+                <div class="mount-field">
+                  <label for="publicUrlInput">Server address</label>
+                  <input
+                    type="text"
+                    id="publicUrlInput"
+                    placeholder="e.g. http://192.168.1.50:4321"
+                    autocomplete="off"
+                    spellcheck="false"
+                  />
+                  <p class="field-hint">
+                    Copy from your address bar, e.g.{" "}
+                    <code>http://192.168.1.50:4321</code>
+                  </p>
                 </div>
-                <input type="file" id="setupFileInput" name="clientSecret" accept=".json" style="display:none" />
-                <button class="btn btn-primary" type="submit" id="setupSubmitBtn" style="margin-top:1rem" disabled>
-                  Upload Credentials
+                <div class="mount-status" id="urlStatus" />
+                <button
+                  class="btn btn-primary"
+                  id="saveUrlBtn"
+                  disabled
+                  style="margin-top:0.75rem"
+                >
+                  Save &amp; Continue
                 </button>
-              </form>
-            </div>
-          )}
+              </div>
+            )
+          }
 
-          {clientSecretExists && !tokensExist && authUrl && (
-            <div>
-              <div class="success-badge">✓ Credentials uploaded</div>
-              <hr class="divider" />
-              <p class="section-title">Connect your YouTube account</p>
-              <p class="section-desc">
-                Click below to sign in with Google and grant access to your
-                YouTube channel. You'll be redirected back automatically.
-              </p>
-              <a class="btn btn-primary" href={authUrl}>Connect YouTube Account</a>
-            </div>
-          )}
+          {
+            !clientSecretExists && (
+              <div>
+                <p class="section-title">Upload your credentials</p>
+                <p class="section-desc">
+                  Download your <code>client_secret.json</code> from Google
+                  Cloud Console, then upload it here to get started.
+                </p>
+                <form method="POST" enctype="multipart/form-data">
+                  <div class="drop-zone" id="setupDropZone">
+                    <svg
+                      width="24"
+                      height="24"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="#9ca3af"
+                      stroke-width="1.5"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      style="margin:0 auto 0.4rem"
+                    >
+                      <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                      <polyline points="17 8 12 3 7 8" />
+                      <line x1="12" y1="3" x2="12" y2="15" />
+                    </svg>
+                    <p>
+                      <strong>Drop client_secret.json here</strong> or click to
+                      browse
+                    </p>
+                    <p class="drop-hint">
+                      Must be a valid Google OAuth2 credential file.
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    id="setupFileInput"
+                    name="clientSecret"
+                    accept=".json"
+                    style="display:none"
+                  />
+                  <button
+                    class="btn btn-primary"
+                    type="submit"
+                    id="setupSubmitBtn"
+                    style="margin-top:1rem"
+                    disabled
+                  >
+                    Upload Credentials
+                  </button>
+                </form>
+              </div>
+            )
+          }
 
-          {clientSecretExists && tokensExist && (
-            <div>
-              <div class="success-badge">✓ All set</div>
-              <p class="section-title">
-                You're authenticated{channelName ? ` as ${channelName}` : ""}!
-              </p>
-              <p class="section-desc">
-                Your credentials and tokens are stored. The app will refresh tokens automatically.
-              </p>
-              {authUrl && (
-                <a class="re-auth-link" href={authUrl}>Re-authenticate with a different account</a>
-              )}
-            </div>
-          )}
+          {
+            clientSecretExists && !tokensExist && authUrl && (
+              <div>
+                <div class="success-badge">✓ Credentials uploaded</div>
+                <hr class="divider" />
+                <p class="section-title">Connect your YouTube account</p>
+                <p class="section-desc">
+                  Click below to sign in with Google and grant access to your
+                  YouTube channel. You'll be redirected back automatically.
+                </p>
+                <div
+                  class="mount-status info"
+                  style="display:block; margin-bottom:1rem"
+                >
+                  Make sure <code>{currentPublicUrl}/api/auth/callback</code> is
+                  added as an authorised redirect URI in your Google Cloud
+                  Console project.
+                </div>
+                <a class="btn btn-primary" href={authUrl}>
+                  Connect YouTube Account
+                </a>
+              </div>
+            )
+          }
+
+          {
+            clientSecretExists && tokensExist && (
+              <div>
+                <div class="success-badge">✓ All set</div>
+                <p class="section-title">
+                  You're authenticated{channelName ? ` as ${channelName}` : ""}!
+                </p>
+                <p class="section-desc">
+                  Your credentials and tokens are stored. The app will refresh
+                  tokens automatically.
+                </p>
+                {authUrl && (
+                  <a class="re-auth-link" href={authUrl}>
+                    Re-authenticate with a different account
+                  </a>
+                )}
+              </div>
+            )
+          }
         </div>
 
         <!-- Proceed card -->
@@ -501,7 +763,15 @@ const setupComplete = clientSecretExists && tokensExist;
           <p class="proceed-card-title">Ready to proceed?</p>
           <ul class="proceed-checklist">
             <li>
-              <span class={`check-icon ${clientSecretExists ? "done" : "todo"}`}>
+              <span class={`check-icon ${publicUrlSet ? "done" : "todo"}`}>
+                {publicUrlSet ? "✓" : "○"}
+              </span>
+              Server address configured
+            </li>
+            <li>
+              <span
+                class={`check-icon ${clientSecretExists ? "done" : "todo"}`}
+              >
                 {clientSecretExists ? "✓" : "○"}
               </span>
               YouTube credentials uploaded
@@ -526,32 +796,47 @@ const setupComplete = clientSecretExists && tokensExist;
             href="/"
             class={`btn-proceed${setupComplete ? "" : " disabled"}`}
             aria-disabled={setupComplete ? "false" : "true"}
-            title={setupComplete ? "Go to uploader" : "Complete the steps above before proceeding"}
+            title={setupComplete
+              ? "Go to uploader"
+              : "Complete the steps above before proceeding"}
           >
-            {setupComplete ? "Proceed to Uploader →" : "Complete setup above to proceed"}
+            {
+              setupComplete
+                ? "Proceed to Uploader →"
+                : "Complete setup above to proceed"
+            }
           </a>
         </div>
-
       </div><!-- /col-right -->
     </div>
   </main>
 
   <script>
-    const DEFAULTS = { videosDir: "/videos", authDir: "/auth", dataDir: "/data" };
+    const DEFAULTS = {
+      videosDir: "/videos",
+      authDir: "/auth",
+      dataDir: "/data",
+    };
 
-    const videosInput   = document.getElementById("videosDir")    as HTMLInputElement;
-    const authInput     = document.getElementById("authDir")      as HTMLInputElement;
-    const dataInput     = document.getElementById("dataDir")      as HTMLInputElement;
-    const mountSaveBtn  = document.getElementById("mountSaveBtn") as HTMLButtonElement;
-    const mountResetBtn = document.getElementById("mountResetBtn")as HTMLButtonElement;
-    const mountStatus   = document.getElementById("mountStatus")!;
+    const videosInput = document.getElementById(
+      "videosDir",
+    ) as HTMLInputElement;
+    const authInput = document.getElementById("authDir") as HTMLInputElement;
+    const dataInput = document.getElementById("dataDir") as HTMLInputElement;
+    const mountSaveBtn = document.getElementById(
+      "mountSaveBtn",
+    ) as HTMLButtonElement;
+    const mountResetBtn = document.getElementById(
+      "mountResetBtn",
+    ) as HTMLButtonElement;
+    const mountStatus = document.getElementById("mountStatus")!;
 
-    const savedVideos  = document.getElementById("savedVideos")!;
-    const savedAuth    = document.getElementById("savedAuth")!;
-    const savedData    = document.getElementById("savedData")!;
+    const savedVideos = document.getElementById("savedVideos")!;
+    const savedAuth = document.getElementById("savedAuth")!;
+    const savedData = document.getElementById("savedData")!;
     const activeVideos = document.getElementById("activeVideos")!;
-    const activeAuth   = document.getElementById("activeAuth")!;
-    const activeData   = document.getElementById("activeData")!;
+    const activeAuth = document.getElementById("activeAuth")!;
+    const activeData = document.getElementById("activeData")!;
 
     function showMountStatus(msg: string, type: "success" | "error" | "info") {
       mountStatus.textContent = msg;
@@ -560,11 +845,11 @@ const setupComplete = clientSecretExists && tokensExist;
 
     function applySaved(saved: Record<string, string | undefined> | null) {
       videosInput.value = saved?.videosDir ?? "";
-      authInput.value   = saved?.authDir   ?? "";
-      dataInput.value   = saved?.dataDir   ?? "";
+      authInput.value = saved?.authDir ?? "";
+      dataInput.value = saved?.dataDir ?? "";
       savedVideos.textContent = saved?.videosDir ?? DEFAULTS.videosDir;
-      savedAuth.textContent   = saved?.authDir   ?? DEFAULTS.authDir;
-      savedData.textContent   = saved?.dataDir   ?? DEFAULTS.dataDir;
+      savedAuth.textContent = saved?.authDir ?? DEFAULTS.authDir;
+      savedData.textContent = saved?.dataDir ?? DEFAULTS.dataDir;
     }
 
     async function loadMountConfig() {
@@ -574,8 +859,8 @@ const setupComplete = clientSecretExists && tokensExist;
         const data = await res.json();
         applySaved(data.saved ?? null);
         activeVideos.textContent = data.active.videosDir ?? DEFAULTS.videosDir;
-        activeAuth.textContent   = data.active.authDir   ?? DEFAULTS.authDir;
-        activeData.textContent   = data.active.dataDir   ?? DEFAULTS.dataDir;
+        activeAuth.textContent = data.active.authDir ?? DEFAULTS.authDir;
+        activeData.textContent = data.active.dataDir ?? DEFAULTS.dataDir;
       } catch {
         showMountStatus("Failed to load mount configuration.", "error");
       }
@@ -586,17 +871,20 @@ const setupComplete = clientSecretExists && tokensExist;
       try {
         const body = {
           videosDir: videosInput.value.trim() || undefined,
-          authDir:   authInput.value.trim()   || undefined,
-          dataDir:   dataInput.value.trim()   || undefined,
+          authDir: authInput.value.trim() || undefined,
+          dataDir: dataInput.value.trim() || undefined,
         };
-        const res  = await fetch("/api/mount-config", {
+        const res = await fetch("/api/mount-config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify(body),
         });
         const data = await res.json();
         if (data.ok) {
-          showMountStatus("✓ Saved. Restart the container to apply.", "success");
+          showMountStatus(
+            "✓ Saved. Restart the container to apply.",
+            "success",
+          );
           await loadMountConfig();
         } else {
           showMountStatus(`Error: ${data.error}`, "error");
@@ -611,7 +899,7 @@ const setupComplete = clientSecretExists && tokensExist;
     mountResetBtn.addEventListener("click", async () => {
       if (!confirm("Reset all paths to defaults?")) return;
       try {
-        const res  = await fetch("/api/mount-config", {
+        const res = await fetch("/api/mount-config", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({}),
@@ -619,7 +907,10 @@ const setupComplete = clientSecretExists && tokensExist;
         const data = await res.json();
         if (data.ok) {
           applySaved(null);
-          showMountStatus("✓ Reset to defaults. Restart the container to apply.", "success");
+          showMountStatus(
+            "✓ Reset to defaults. Restart the container to apply.",
+            "success",
+          );
           await loadMountConfig();
         } else {
           showMountStatus(`Error: ${data.error}`, "error");
@@ -631,15 +922,68 @@ const setupComplete = clientSecretExists && tokensExist;
 
     loadMountConfig();
 
+    // Public URL setup
+    const urlInput = document.getElementById(
+      "publicUrlInput",
+    ) as HTMLInputElement | null;
+    const saveUrlBtn = document.getElementById(
+      "saveUrlBtn",
+    ) as HTMLButtonElement | null;
+    const urlStatus = document.getElementById("urlStatus");
+
+    if (urlInput && saveUrlBtn) {
+      // Enable button only when something is typed
+      urlInput.addEventListener("input", () => {
+        saveUrlBtn.disabled = urlInput.value.trim().length === 0;
+      });
+
+      saveUrlBtn.addEventListener("click", async () => {
+        saveUrlBtn.disabled = true;
+        try {
+          const res = await fetch("/api/config/public-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ publicUrl: urlInput.value.trim() }),
+          });
+          const data = await res.json();
+          if (data.ok) {
+            // Reload the page — the server-rendered wizard will now show step 2
+            window.location.reload();
+          } else {
+            if (urlStatus) {
+              urlStatus.textContent = `Error: ${data.error}`;
+              urlStatus.className = "mount-status error";
+            }
+            saveUrlBtn.disabled = false;
+          }
+        } catch {
+          if (urlStatus) {
+            urlStatus.textContent = "Failed to save — check the server logs.";
+            urlStatus.className = "mount-status error";
+          }
+          saveUrlBtn.disabled = false;
+        }
+      });
+    }
+
     // Drop zone
-    const zone      = document.getElementById("setupDropZone");
-    const fileInput = document.getElementById("setupFileInput") as HTMLInputElement | null;
-    const submitBtn = document.getElementById("setupSubmitBtn") as HTMLButtonElement | null;
+    const zone = document.getElementById("setupDropZone");
+    const fileInput = document.getElementById(
+      "setupFileInput",
+    ) as HTMLInputElement | null;
+    const submitBtn = document.getElementById(
+      "setupSubmitBtn",
+    ) as HTMLButtonElement | null;
 
     if (zone && fileInput && submitBtn) {
       zone.addEventListener("click", () => fileInput.click());
-      zone.addEventListener("dragover", (e) => { e.preventDefault(); zone.classList.add("dragover"); });
-      zone.addEventListener("dragleave", () => zone.classList.remove("dragover"));
+      zone.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        zone.classList.add("dragover");
+      });
+      zone.addEventListener("dragleave", () =>
+        zone.classList.remove("dragover"),
+      );
       zone.addEventListener("drop", (e) => {
         e.preventDefault();
         zone.classList.remove("dragover");

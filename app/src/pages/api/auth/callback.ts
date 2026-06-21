@@ -7,7 +7,7 @@ import { createOAuthClient, saveTokens } from "../../../lib/auth.ts";
 const redirect = (location: string) =>
   new Response(null, { status: 302, headers: { Location: location } });
 
-export const GET: APIRoute = async ({ url, request }) => {
+export const GET: APIRoute = async ({ url }) => {
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
 
@@ -15,11 +15,7 @@ export const GET: APIRoute = async ({ url, request }) => {
     return redirect(`/setup?error=${encodeURIComponent(error ?? "no_code")}`);
 
   try {
-    const host = request.headers.get("host") ?? "localhost:4321";
-    const proto = request.headers.get("x-forwarded-proto") ?? "http";
-    const redirectUri = `${proto}://${host}/api/auth/callback`;
-
-    const client = await createOAuthClient(redirectUri);
+    const client = await createOAuthClient(); // uses OAUTH_REDIRECT_URI from config
     const { tokens } = await client.getToken(code);
     await saveTokens(tokens);
     return redirect("/setup");

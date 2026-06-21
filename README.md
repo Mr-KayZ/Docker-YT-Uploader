@@ -73,12 +73,13 @@ This app requires you to create your own Google Cloud project to authenticate wi
 
 ### 4. First-Run Setup
 
-Navigate to **http://localhost:4321/setup** in your browser. If no credentials are detected, you will be automatically redirected there. The setup page walks through two required steps before the uploader is accessible:
+Navigate to `http://localhost:4321/setup` in your browser if set up locally, or `http://<server-IP-address>:4321` if set up on a server (VM or otherwise). If no credentials are detected, you will be automatically redirected there. The setup page walks through two required steps before the uploader is accessible:
 
+1. **Type in you server IP address** by typing into the 
 1. **Upload your `client_secret.json`** via drag-and-drop or the file browser
 2. **Click "Connect YouTube Account"** to be redirected to Google's OAuth consent screen - sign in and approve access, and you will be returned to the setup page automatically
 
-Once both steps are complete, the **Ready to proceed?** card becomes active and you can navigate to the uploader. The middleware blocks access to all non-setup routes until both credentials and tokens are present.
+Once all three steps are complete, the **Ready to proceed?** card becomes active and you can navigate to the uploader. The middleware blocks access to all non-setup routes until both credentials and tokens are present.
 
 A `tokens.json` file is saved to the `auth/` volume automatically. This only needs to be done once; tokens are refreshed automatically by the app going forward.
 

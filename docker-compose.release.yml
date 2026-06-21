@@ -19,4 +19,8 @@ services:
       - AUTH_DIR=/auth
       - DATA_DIR=/data
       - VIDEOS_DIR=/videos
+      # Optional: pre-set your server address to skip the setup wizard step.
+      # If omitted, you will be prompted to enter it on the setup page.
+      # Example: PUBLIC_URL=http://192.168.1.50:4321
+      # - PUBLIC_URL=
     restart: unless-stopped
