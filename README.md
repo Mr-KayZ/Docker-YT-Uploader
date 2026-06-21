@@ -15,10 +15,20 @@ Add the fact that uploading large videos hammers my network connection, making i
 ### 1. Prerequisites
 Before proceeding, you must have **Docker Desktop** ([Windows](https://docs.docker.com/desktop/setup/install/windows-install/)/[MacOS](https://docs.docker.com/desktop/setup/install/mac-install/)) or **Docker Engine** + **Docker Compose plugin** ([Linux](https://docs.docker.com/desktop/setup/install/linux/)). Everything else will be baked into the image.
 
+#### Remote access requirement
+If you plan to use the uploader from another machine on your network, you must access it through a **real domain name** that points to your server. Google OAuth for web applications does not accept bare IP addresses as redirect URIs, so addresses such as `http://192.168.1.40:4321` cannot be used for the OAuth callback. `localhost` is allowed only for same-machine local use. [web:234][web:248]
+
+Examples:
+- **Local-only setup:** `http://localhost:4321`
+- **Remote/NAS setup:** `https://yt.myhost.com:4321`
+
+> **Note:** A fake local hostname such as `` is not suitable here if you want Google OAuth redirect validation to work reliably. Google requires the redirect URI used by a web application to match an allowed hostname exactly, and IP-based/internal-hostname approaches are not accepted in the same way as `localhost`. [web:246][web:252]
+
 ### 2. Docker Setup
 
 #### Download and start the container
 Open a terminal where Docker Engine and Compose are present (for Windows, WSL integration is ideal) and run:
+
 ```bash
 # Download the release compose file
 curl -O https://raw.githubusercontent.com/Mr-KayZ/Docker-YT-Uploader/main/docker-compose.release.yml
@@ -26,7 +36,10 @@ curl -O https://raw.githubusercontent.com/Mr-KayZ/Docker-YT-Uploader/main/docker
 # Pull and start
 docker compose -f docker-compose.release.yml up -d
 ```
-Once running, access the web UI at: **http://localhost:4321/setup**
+
+Once running, access the web UI at:
+- **Local setup:** `http://localhost:4321/setup`
+- **Remote server setup:** `https://yt.myhost.com:4321/setup`
 
 > **Note:** To update to a newer image, re-pull and recreate the container:
 ```bash
@@ -64,30 +77,27 @@ This app requires you to create your own Google Cloud project to authenticate wi
 #### Step 5 - Create the OAuth Credentials
 1. In the left sidebar, navigate to **APIs & Services** → **Credentials**
 2. Click **+ Create credentials** → **OAuth client ID**
-3. Set the application type to **Desktop App** and name it anything (e.g. `my-yt-uploader`)
-4. Click **Create**, then **Download JSON**
+3. Set the application type to **Web Application** and name it anything (e.g. `my-yt-uploader`)
+4. Under **Authorised redirect URIs**, click **+ Add URI** and enter your redirect URI:
+   - **Local setup:** `http://localhost:4321/api/auth/callback`
+   - **Remote server setup:** `https://yt.myhost.com:4321/api/auth/callback`
+5. Click **Create**, then **Download JSON**
 
 > **Important:** Download the JSON immediately - this is the only time the download option is shown. If you miss it, you will need to delete and recreate the credential.
 
-5. Rename the downloaded file to `client_secret.json` (optional but recommended)
+6. Rename the downloaded file to `client_secret.json` (optional but recommended)
 
-#### Step 6 - Add an Authorised Redirect URI
-1. On the **Credentials** page, click the OAuth client ID you just created
-2. Under **Authorised redirect URIs**, click **+ Add URI**
-3. Enter: `http://<your-server-address>:4321/api/auth/callback`
-   - If running locally: `http://localhost:4321/api/auth/callback`
-   - If running on a server: `http://192.168.1.50:4321/api/auth/callback` (use your server's actual IP)
-4. Click **Save**
-
-> This URI must match exactly what the app uses. The setup wizard will show you the exact URI once you enter your server address in Step 1 of the setup page.
+> The redirect URI entered here must match exactly what the app uses. The setup wizard will display the exact URI once you enter your server address in Step 1 of the setup page - use that to double-check. Redirect URIs must match exactly, including protocol, hostname, port, and path. [web:250][web:253]
 
 ### 4. First-Run Setup
 
-Navigate to `http://localhost:4321/setup` in your browser if running locally, or `http://<server-IP>:4321/setup` if running on a remote server. If no credentials are detected, you will be automatically redirected there.
+Navigate to your setup page:
+- **Local setup:** `http://localhost:4321/setup`
+- **Remote server setup:** `https://yt.myhost.com:4321/setup`
 
-The setup page walks through a four-step wizard before the uploader is accessible:
+If no credentials are detected, you will be automatically redirected there. The setup page walks through a four-step wizard before the uploader is accessible:
 
-1. **Set your server address** - Enter the address you use to reach this page (you can copy it straight from your browser's address bar). This is required so Google knows where to redirect you after login. The wizard will display the exact redirect URI to register in Google Cloud Console.
+1. **Set your server address** - Enter the address you use to reach this page. You can copy it straight from your browser's address bar. This is required so Google knows where to redirect you after login.
 2. **Upload your `client_secret.json`** - via drag-and-drop or the file browser
 3. **Click "Connect YouTube Account"** - you will be redirected to Google's OAuth consent screen; sign in and approve access, and you will be returned to the setup page automatically
 4. **Ready** - the **Ready to proceed?** card becomes active and you can navigate to the uploader
@@ -191,9 +201,9 @@ docker run -p 4321:4321 \
 | `AUTH_DIR` | No | `/auth` | Path to the auth volume inside the container |
 | `DATA_DIR` | No | `/data` | Path to the data volume inside the container |
 | `VIDEOS_DIR` | No | `/videos` | Path to the videos volume inside the container |
-| `PUBLIC_URL` | No | *(set via setup UI)* | The externally reachable base URL of this instance (e.g. `http://192.168.1.50:4321`). If set, skips the server address step in the setup wizard. Useful for automated or headless deployments. |
+| `PUBLIC_URL` | No | *(set via setup UI)* | The externally reachable base URL of this instance, such as `http://localhost:4321` for local use or `https://yt.myhost.com:4321` for remote use. If set, it skips the server address step in the setup wizard. |
 
-> `PUBLIC_URL` is not required if you set your server address through the setup wizard UI. Only set it in your compose file if you prefer to pre-configure it without using the UI.
+> `PUBLIC_URL` should be `http://localhost:4321` for same-machine local use, or a real domain such as `https://yt.myhost.com:4321` for remote use. Do not use bare IP addresses for Google OAuth web-app redirects. [web:234][web:248]
 
 ### Sidecar Metadata (`.meta.json`)
 
@@ -267,7 +277,7 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 
 ### Fixes to Implement
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
-
+- **Figure out how to get Google OAuth working** - Have a hosted callback service built into the docker container... there's no other way
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`

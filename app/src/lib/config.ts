@@ -1,73 +1,146 @@
 // app/src/lib/config.ts
-import { readFile, writeFile } from "node:fs/promises";
+import { readFile, writeFile, mkdir } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import path from "node:path";
 import { DATA_DIR } from "./paths.ts";
 
 const CONFIG_PATH = path.join(DATA_DIR, "config.json");
 
+type AppConfig = {
+  publicUrl?: string;
+};
+
+function isIpAddress(hostname: string): boolean {
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) return true; // IPv4
+  if (/^\[?[a-fA-F0-9:]+\]?$/.test(hostname) && hostname.includes(":")) return true; // IPv6-ish
+  return false;
+}
+
+function isValidRedirectHost(hostname: string): boolean {
+  const host = hostname.toLowerCase();
+
+  // Explicitly allow localhost for same-machine development/use
+  if (host === "localhost") return true;
+
+  // Reject raw IPs (Google OAuth web app redirect URIs do not allow these)
+  if (isIpAddress(host)) return false;
+
+  // Reject .local hostnames for OAuth redirect usage
+  if (host.endsWith(".local")) return false;
+
+  // Require something domain-like: at least one dot and sensible labels
+  if (!host.includes(".")) return false;
+
+  const labels = host.split(".");
+  return labels.every((label) => /^[a-z0-9-]+$/i.test(label) && !label.startsWith("-") && !label.endsWith("-"));
+}
+
 /**
- * Normalise whatever the user typed into a clean base URL with no trailing slash.
- * Accepts any of:
- *   192.168.1.50          → http://192.168.1.50:4321
- *   192.168.1.50:4321     → http://192.168.1.50:4321
- *   http://192.168.1.50:4321/  → http://192.168.1.50:4321
- *   https://yt.myhost.com → https://yt.myhost.com
+ * Normalize and validate the externally reachable base URL used for OAuth callbacks.
+ *
+ * Allowed examples:
+ *   localhost                    -> http://localhost:4321
+ *   http://localhost             -> http://localhost:4321
+ *   https://yt.myhost.com        -> https://yt.myhost.com:4321
+ *   yt.myhost.com                -> https://yt.myhost.com:4321
+ *   https://yt.myhost.com:8443   -> https://yt.myhost.com:8443
+ *
+ * Rejected examples:
+ *   192.168.1.40
+ *   http://192.168.1.40:4321
+ *   yt-uploader.local
  */
 export function normalisePublicUrl(raw: string): string {
-  let s = raw.trim().replace(/\/+$/, ""); // strip trailing slashes
+  const input = raw.trim();
+  if (!input) throw new Error("Server address is required.");
 
-  // If no protocol prefix, add http:// so URL() can parse it
-  if (!/^https?:\/\//i.test(s)) s = `http://${s}`;
+  let candidate = input.replace(/\/+$/, "");
 
-  const u = new URL(s);
+  // If no protocol is provided:
+  // - localhost defaults to http
+  // - real domains default to https
+  if (!/^https?:\/\//i.test(candidate)) {
+    candidate = candidate.toLowerCase().startsWith("localhost")
+      ? `http://${candidate}`
+      : `https://${candidate}`;
+  }
 
-  // If user typed a bare IP with no explicit port, default to 4321
-  if (!u.port) u.port = "4321";
+  let url: URL;
+  try {
+    url = new URL(candidate);
+  } catch {
+    throw new Error("Enter a valid server address, such as localhost or https://yt.myhost.com.");
+  }
 
-  // Return just origin (protocol + host + port) - no path
-  return u.origin;
+  if (!["http:", "https:"].includes(url.protocol)) {
+    throw new Error("Only http and https server addresses are supported.");
+  }
+
+  if (!isValidRedirectHost(url.hostname)) {
+    throw new Error(
+      "Use localhost for local setup, or a real domain name such as https://yt.myhost.com. IP addresses and .local domains are not supported for Google OAuth redirects.",
+    );
+  }
+
+  // Localhost may use http; real domains should use https
+  if (url.hostname !== "localhost" && url.protocol !== "https:") {
+    url.protocol = "https:";
+  }
+
+  if (!url.port) {
+    url.port = "4321";
+  }
+
+  url.pathname = "";
+  url.search = "";
+  url.hash = "";
+
+  return url.origin;
+}
+
+export async function loadConfig(): Promise<AppConfig> {
+  if (!existsSync(CONFIG_PATH)) return {};
+  try {
+    const raw = await readFile(CONFIG_PATH, "utf-8");
+    return JSON.parse(raw) as AppConfig;
+  } catch {
+    return {};
+  }
+}
+
+export async function saveConfig(config: AppConfig): Promise<void> {
+  await mkdir(DATA_DIR, { recursive: true });
+  await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), "utf-8");
 }
 
 export async function getPublicUrl(): Promise<string> {
-  // 1. Saved via the setup UI
-  if (existsSync(CONFIG_PATH)) {
-    try {
-      const raw = JSON.parse(await readFile(CONFIG_PATH, "utf-8"));
-      if (raw?.publicUrl) return raw.publicUrl;
-    } catch {
-      // corrupt file - fall through
-    }
+  const config = await loadConfig();
+
+  if (config.publicUrl) {
+    return normalisePublicUrl(config.publicUrl);
   }
-  // 2. Env var (power users / CI)
-  if (process.env.PUBLIC_URL) return normalisePublicUrl(process.env.PUBLIC_URL);
-  // 3. Last resort
+
+  if (process.env.PUBLIC_URL) {
+    return normalisePublicUrl(process.env.PUBLIC_URL);
+  }
+
   return "http://localhost:4321";
 }
 
-export async function savePublicUrl(raw: string): Promise<void> {
-  const publicUrl = normalisePublicUrl(raw);
-  const existing = existsSync(CONFIG_PATH)
-    ? (JSON.parse(await readFile(CONFIG_PATH, "utf-8")).catch?.(() => {}) ?? {})
-    : {};
-  await writeFile(
-    CONFIG_PATH,
-    JSON.stringify({ ...existing, publicUrl }, null, 2),
-  );
+export async function hasPublicUrl(): Promise<boolean> {
+  const config = await loadConfig();
+  return !!(config.publicUrl || process.env.PUBLIC_URL);
 }
 
-export async function hasPublicUrl(): Promise<boolean> {
-  if (existsSync(CONFIG_PATH)) {
-    try {
-      const raw = JSON.parse(await readFile(CONFIG_PATH, "utf-8"));
-      if (raw?.publicUrl) return true;
-    } catch {
-      /* fall through */
-    }
-  }
-  return !!process.env.PUBLIC_URL;
+export async function savePublicUrl(raw: string): Promise<string> {
+  const publicUrl = normalisePublicUrl(raw);
+  const config = await loadConfig();
+  config.publicUrl = publicUrl;
+  await saveConfig(config);
+  return publicUrl;
 }
 
 export async function getOAuthRedirectUri(): Promise<string> {
-  return `${await getPublicUrl()}/api/auth/callback`;
+  const base = await getPublicUrl();
+  return `${base}/api/auth/callback`;
 }
