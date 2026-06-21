@@ -341,6 +341,7 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
+- **Major bug** - Fix the live image that keeps giving 500: Internal server error despite docker status being up
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
