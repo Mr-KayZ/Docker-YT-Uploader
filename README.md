@@ -1,7 +1,9 @@
 # Docker-YT-Uploader: Ver. 0.9.1.2
+
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
 ## Use Case
+
 So I have a server that's running 24/7 mainly as a NAS, and when recording videos, filesizes regularly exceed 10–20 GB. Yes, compression software can reduce this, but that often introduces compression artifacts, on top of YouTube's own compression, resulting in a noticeably messier final video.
 
 Add the fact that uploading large videos hammers my network connection, making it nearly impossible to do anything else online in the meantime (like, say, recording more footage), and you can start to see the problem.
@@ -20,10 +22,10 @@ Before proceeding, you must have **Docker Desktop** ([Windows](https://docs.dock
 
 Google OAuth for web applications does not accept bare IP addresses as redirect URIs. This means `http://192.168.1.40:4321` **cannot** be used for the OAuth callback - Google will reject it.
 
-| Setup type | Access method | Domain needed? |
-|---|---|---|
-| Same-machine local use | `http://localhost:4321` | No |
-| NAS / remote machine | `https://myuploader.duckdns.org:4321` | **Yes** |
+| Setup type             | Access method                         | Domain needed? |
+| ---------------------- | ------------------------------------- | -------------- |
+| Same-machine local use | `http://localhost:4321`               | No             |
+| NAS / remote machine   | `https://myuploader.duckdns.org:4321` | **Yes**        |
 
 If you are accessing the uploader from a different machine than the one running Docker (i.e. a NAS, server, or VM), you need a real domain name pointing to your server's local IP. The recommended free option is **DuckDNS**.
 
@@ -45,6 +47,19 @@ DuckDNS gives you a free subdomain ending in `.duckdns.org` - which Google OAuth
 
 Once set up, use `https://myuploader.duckdns.org:4321` anywhere this guide shows a remote address example. Replace `myuploader` with whatever subdomain you chose.
 
+#### Alternatives to DuckDNS
+
+If DuckDNS is unavailable, or you wish to use another service, here are other free subdomain alternatives:
+
+| Service | Free subdomains | Domain examples | Account expiry | Notes |
+| --- | --- | --- | --- | --- |
+| Dynu | Up to 4 | Shared pool of many domains | No expiry | Supports TXT records, identical setup to DuckDNS |
+| No-IP | Up to 3 | yourname.no-ip.info, yourname.ddns.net | Requires re-confirmation every 30 days (free tier) | Most widely used, very reliable noip |
+| Dynu | Up to 4 | yourname.freeddns.org, yourname.ddns.net | No expiry | Supports TXT records, claimed 100% uptime, great API merginit |
+| FreeDNS (afraid.org) | Up to 5 | Shared pool of many domains | No expiry | Largest catalog of shared domains, very established alternativeto |
+| deSEC | 1 subdomain | yourname.dedyn.io | No expiry | Nonprofit, open-source, based in Germany, supports wildcards and Let's Encrypt reddit |
+
+
 ---
 
 ### 2. Docker Setup
@@ -62,10 +77,12 @@ docker compose -f docker-compose.release.yml up -d
 ```
 
 Once running, access the web UI at:
+
 - **Local setup:** `http://localhost:4321/setup`
 - **NAS/remote setup:** `https://myuploader.duckdns.org:4321/setup`
 
 > **To update to a newer image:**
+>
 > ```bash
 > docker compose -f docker-compose.release.yml pull
 > docker compose -f docker-compose.release.yml up -d --force-recreate
@@ -78,23 +95,27 @@ Once running, access the web UI at:
 This app requires you to create your own Google Cloud project to authenticate with the YouTube Data API v3. Google does not allow a single set of credentials to be shared publicly for uploading purposes.
 
 #### Step 1 - Create a Google Cloud Project
+
 1. Go to [console.cloud.google.com](https://console.cloud.google.com)
 2. Click **Select a project** (top-right, next to the Google Cloud logo) → **New Project**
 3. Name it anything you want (e.g. `my-yt-uploader`), then click **Create**
 4. Select the project you just created from the **Select a project** dropdown
 
 #### Step 2 - Enable YouTube Data API v3
+
 1. Open the left sidebar via the hamburger icon (top-left)
 2. Navigate to **APIs & Services** → **Library**
 3. Search for `YouTube Data API v3` → **Enable**
 
 #### Step 3 - Configure the OAuth Consent Screen
+
 1. In the left sidebar, go to **APIs & Services** → **OAuth consent screen** → **Get Started**
 2. Fill in the app name (e.g. `my-yt-uploader`) and your user email
 3. Under **Audience**, select **External**
 4. Complete the remaining fields and agree to the policy
 
 #### Step 4 - Add yourself as a test user
+
 1. Still on the **OAuth consent screen** page, scroll down to the **Test users** section
 2. Click **+ Add Users** and add your Google account email
 3. Click **Save**
@@ -102,6 +123,7 @@ This app requires you to create your own Google Cloud project to authenticate wi
 > This step is required. While the app is in Testing status, only approved test users can complete the OAuth flow. Formal Google app verification is **not** required for self-hosted personal use - staying in Testing mode permanently is intentional and sufficient.
 
 #### Step 5 - Create the OAuth Credentials
+
 1. In the left sidebar, navigate to **APIs & Services** → **Credentials**
 2. Click **+ Create credentials** → **OAuth client ID**
 3. Set the application type to **Web Application** and name it anything (e.g. `my-yt-uploader`)
@@ -121,6 +143,7 @@ This app requires you to create your own Google Cloud project to authenticate wi
 ### 4. First-Run Setup
 
 Navigate to your setup page:
+
 - **Local setup:** `http://localhost:4321/setup`
 - **NAS/remote setup:** `https://myuploader.duckdns.org:4321/setup`
 
@@ -142,10 +165,13 @@ A `tokens.json` file is saved to the `auth/` volume automatically. This only nee
 ---
 
 ## How It Works
+
 > Note: Architecture and tech stack are subject to change as the project evolves.
 
 ### Foundation
+
 At its core, Docker-YT-Uploader is a Docker container that:
+
 1. **Watches a configured folder** for new video files. This folder can be:
    - A local directory within the Linux host or VM
    - An NFS-mounted share from another machine on the network (folder visibility works the same either way)
@@ -156,6 +182,7 @@ At its core, Docker-YT-Uploader is a Docker container that:
 The container is designed to run persistently alongside other services on a NAS or home server, with minimal interaction required once configured.
 
 ### Tech Stack
+
 - **Frontend/Backend:** [Astro](https://astro.build/)
 - **YouTube Integration:** [YouTube Data API v3 (OAuth 2.0)](https://developers.google.com/youtube/v3/guides/authentication)
 - **Containerization:** Docker / Docker Compose
@@ -163,6 +190,7 @@ The container is designed to run persistently alongside other services on a NAS 
 ---
 
 ## Features
+
 > Note: Features, planned or otherwise, are subject to change as the project evolves.
 
 - **Web interface for metadata editing** - Title, description, tags, category, privacy, schedule
@@ -192,13 +220,14 @@ The container is designed to run persistently alongside other services on a NAS 
 
 The app requires three host directories to be mounted into the container. These can be configured from the **Setup page** and take effect after restarting the container. The defaults are:
 
-| Mount | Default path | Purpose |
-|---|---|---|
-| Videos | `/videos` | Watched folder - drop `.mp4` files (and optional `.meta.json` sidecars) here |
-| Auth | `/auth` | Stores `client_secret.json` and OAuth tokens |
-| Data | `/data` | Stores queue state and persistence files |
+| Mount  | Default path | Purpose                                                                      |
+| ------ | ------------ | ---------------------------------------------------------------------------- |
+| Videos | `/videos`    | Watched folder - drop `.mp4` files (and optional `.meta.json` sidecars) here |
+| Auth   | `/auth`      | Stores `client_secret.json` and OAuth tokens                                 |
+| Data   | `/data`      | Stores queue state and persistence files                                     |
 
 **Docker Compose example:**
+
 ```yaml
 services:
   yt-uploader:
@@ -212,6 +241,7 @@ services:
 ```
 
 **Docker CLI equivalent:**
+
 ```bash
 docker run -p 4321:4321 \
   -v /your/videos:/videos \
@@ -224,15 +254,15 @@ docker run -p 4321:4321 \
 
 ### Environment Variables
 
-| Variable | Required | Default | Description |
-|---|---|---|---|
-| `NODE_ENV` | No | `production` | Node environment |
-| `HOST` | No | `0.0.0.0` | Interface the server binds to |
-| `PORT` | No | `4321` | Port the server listens on |
-| `AUTH_DIR` | No | `/auth` | Path to the auth volume inside the container |
-| `DATA_DIR` | No | `/data` | Path to the data volume inside the container |
-| `VIDEOS_DIR` | No | `/videos` | Path to the videos volume inside the container |
-| `PUBLIC_URL` | No | *(set via setup UI)* | The externally reachable base URL of this instance. Use `http://localhost:4321` for same-machine local use, or `https://myuploader.duckdns.org:4321` for NAS/remote use. If set, it skips the server address step in the setup wizard. Do not use bare IP addresses - Google OAuth does not accept them. |
+| Variable     | Required | Default              | Description                                                                                                                                                                                                                                                                                              |
+| ------------ | -------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `NODE_ENV`   | No       | `production`         | Node environment                                                                                                                                                                                                                                                                                         |
+| `HOST`       | No       | `0.0.0.0`            | Interface the server binds to                                                                                                                                                                                                                                                                            |
+| `PORT`       | No       | `4321`               | Port the server listens on                                                                                                                                                                                                                                                                               |
+| `AUTH_DIR`   | No       | `/auth`              | Path to the auth volume inside the container                                                                                                                                                                                                                                                             |
+| `DATA_DIR`   | No       | `/data`              | Path to the data volume inside the container                                                                                                                                                                                                                                                             |
+| `VIDEOS_DIR` | No       | `/videos`            | Path to the videos volume inside the container                                                                                                                                                                                                                                                           |
+| `PUBLIC_URL` | No       | _(set via setup UI)_ | The externally reachable base URL of this instance. Use `http://localhost:4321` for same-machine local use, or `https://myuploader.duckdns.org:4321` for NAS/remote use. If set, it skips the server address step in the setup wizard. Do not use bare IP addresses - Google OAuth does not accept them. |
 
 ### Sidecar Metadata (`.meta.json`)
 
@@ -252,26 +282,28 @@ All fields are optional - any omitted field leaves the corresponding form field 
 }
 ```
 
-| Field | Type | Accepted values |
-|---|---|---|
-| `title` | `string` | Any text, max 100 characters |
-| `description` | `string` | Any text, max 5000 characters |
-| `tags` | `string[]` | Array of strings, 500 characters total across all tags |
-| `privacy` | `string` | `"public"`, `"private"`, `"unlisted"` |
-| `categoryId` | `string` | YouTube numeric category ID (e.g. `"20"` = Gaming, `"22"` = People & Blogs) |
-| `language` | `string` | BCP-47 code (e.g. `"en"`, `"fr"`, `"ja"`) |
-| `audience` | `string` | `"general"`, `"kids"`, `"age_restricted"` |
+| Field         | Type       | Accepted values                                                             |
+| ------------- | ---------- | --------------------------------------------------------------------------- |
+| `title`       | `string`   | Any text, max 100 characters                                                |
+| `description` | `string`   | Any text, max 5000 characters                                               |
+| `tags`        | `string[]` | Array of strings, 500 characters total across all tags                      |
+| `privacy`     | `string`   | `"public"`, `"private"`, `"unlisted"`                                       |
+| `categoryId`  | `string`   | YouTube numeric category ID (e.g. `"20"` = Gaming, `"22"` = People & Blogs) |
+| `language`    | `string`   | BCP-47 code (e.g. `"en"`, `"fr"`, `"ja"`)                                   |
+| `audience`    | `string`   | `"general"`, `"kids"`, `"age_restricted"`                                   |
 
 Files with a recognised sidecar are marked with a **META** badge in the file panel. Invalid or malformed `.meta.json` files are silently ignored and the form remains blank.
 
 ---
 
 ## Known Constraints
+
 The YouTube Data API v3 has a default quota of **10,000 units per day**. Each video upload costs **1,600 units**, which works out to a maximum of **~6 uploads per day** on the default allocation. If this becomes a bottleneck, a quota increase can be requested through the [Google Cloud Console](https://console.cloud.google.com/).
 
 ---
 
 ## Development Status
+
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
 
 Want to contribute? Remember to create an issue and read the [wiki](https://github.com/Mr-KayZ/Docker-YT-Uploader/wiki) to quickly get up to speed on how to set up the dev space locally!
@@ -280,33 +312,35 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 
 > **Note:** Roadmap is subject to change as the project evolves, and major bugs are found which need to be addressed.
 
-| Version | Milestone | Status |
-|---|---|---|
-| 0.1.0 | Project scaffold - Astro + Docker + basic routing | Complete |
-| 0.2.0 | Auth system - OAuth setup page, credential upload, callback | Complete |
-| 0.3.0 | File watcher + queue persistence | Complete |
-| 0.4.0 | Uploader core + scheduler | Complete |
-| 0.5.0 | Web UI - metadata form, file list panel, enqueue flow | Complete |
-| 0.6.0 | Cross-file integration fixes, route corrections, server init hooks | Complete |
-| 0.7.0 | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | Complete |
-| 0.8.0 | Sidecar `.meta.json` support - auto-fill metadata form from file | Complete |
-| 0.9.0 | Mount point configuration - setup UI for watched folder, auth, and data directories | Complete |
-| 0.9.1 | Setup UX polish - proceed card, button alignment fixes | Complete |
-| 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI | Complete |
-| 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS | Complete |
-| 0.9.2 | Resumable uploads + live upload progress indicator + spinner (bottom-left card) | In Progress |
-| 0.9.3 | Upload info panel - progress bar, upload speed, quota usage | Planned |
-| 0.9.4 | In-browser notifications - toast on completion + bell popover with history | Planned |
-| 0.9.5 | Queue management - reorder, pause, cancel pending uploads via popover | Planned |
-| 0.9.6 | Playlist support - pull channel playlists, assign at upload time | Planned |
-| 0.9.7 | Docker log viewer - dedicated page for live container console output | Planned |
-| 0.9.8 | Additional notification channels - webhooks, ntfy, Gotify | Planned |
-| 0.9.9 | Drag-and-drop video upload directly into the web UI | Planned |
-| 0.9.10 | Final bug fixing round and testing | Planned |
-| 1.0.0 | All key and planned features complete; end-to-end Docker tested | Target |
+| Version | Milestone                                                                                      | Status      |
+| ------- | ---------------------------------------------------------------------------------------------- | ----------- |
+| 0.1.0   | Project scaffold - Astro + Docker + basic routing                                              | Complete    |
+| 0.2.0   | Auth system - OAuth setup page, credential upload, callback                                    | Complete    |
+| 0.3.0   | File watcher + queue persistence                                                               | Complete    |
+| 0.4.0   | Uploader core + scheduler                                                                      | Complete    |
+| 0.5.0   | Web UI - metadata form, file list panel, enqueue flow                                          | Complete    |
+| 0.6.0   | Cross-file integration fixes, route corrections, server init hooks                             | Complete    |
+| 0.7.0   | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | Complete    |
+| 0.8.0   | Sidecar `.meta.json` support - auto-fill metadata form from file                               | Complete    |
+| 0.9.0   | Mount point configuration - setup UI for watched folder, auth, and data directories            | Complete    |
+| 0.9.1   | Setup UX polish - proceed card, button alignment fixes                                         | Complete    |
+| 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI             | Complete    |
+| 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS        | Complete    |
+| 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)                | In Progress |
+| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | Planned     |
+| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | Planned     |
+| 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                          | Planned     |
+| 0.9.6   | Playlist support - pull channel playlists, assign at upload time                               | Planned     |
+| 0.9.7   | Docker log viewer - dedicated page for live container console output                           | Planned     |
+| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify                                      | Planned     |
+| 0.9.9   | Drag-and-drop video upload directly into the web UI                                            | Planned     |
+| 0.9.10  | Final bug fixing round and testing                                                             | Planned     |
+| 1.0.0   | All key and planned features complete; end-to-end Docker tested                                | Target      |
 
 ### Fixes to Implement
+
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
+
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
