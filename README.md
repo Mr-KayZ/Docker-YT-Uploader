@@ -241,3 +241,4 @@ These are outstanding structural and UX improvements that don't map to a specifi
 - **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should appear in the bell popover history
 - **Fix webclient to be accessible everywhere** - Reconfirm that this docker image can have its webclient reached via simple IP address instead.
 - **Have a settings page** - Allows changing of ports, updating of app (if possible), etc.
+- **Introduce hardening** - Look into making it more secure for multi-user or production ready environments
