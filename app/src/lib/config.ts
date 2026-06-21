@@ -39,11 +39,11 @@ function isValidRedirectHost(hostname: string): boolean {
  * Normalize and validate the externally reachable base URL used for OAuth callbacks.
  *
  * Allowed examples:
- *   localhost                    -> http://localhost:4321
- *   http://localhost             -> http://localhost:4321
- *   https://yt.myhost.com        -> https://yt.myhost.com:4321
- *   yt.myhost.com                -> https://yt.myhost.com:4321
- *   https://yt.myhost.com:8443   -> https://yt.myhost.com:8443
+ *   localhost                          -> http://localhost:4321
+ *   http://localhost                   -> http://localhost:4321
+ *   myuploader.duckdns.org             -> https://myuploader.duckdns.org:4321
+ *   https://myuploader.duckdns.org     -> https://myuploader.duckdns.org:4321
+ *   https://yt.myhost.com:8443         -> https://yt.myhost.com:8443
  *
  * Rejected examples:
  *   192.168.1.40

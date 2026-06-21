@@ -1,4 +1,4 @@
-# Docker-YT-Uploader: Ver. 0.9.1
+# Docker-YT-Uploader: Ver. 0.9.1.2
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
 ## Use Case
@@ -8,25 +8,49 @@ Add the fact that uploading large videos hammers my network connection, making i
 
 **Solution?** Use the NAS I already own to handle uploads independently, keeping my main machine free.
 
-***
+---
 
 ## Setup
 
 ### 1. Prerequisites
+
 Before proceeding, you must have **Docker Desktop** ([Windows](https://docs.docker.com/desktop/setup/install/windows-install/)/[MacOS](https://docs.docker.com/desktop/setup/install/mac-install/)) or **Docker Engine** + **Docker Compose plugin** ([Linux](https://docs.docker.com/desktop/setup/install/linux/)). Everything else will be baked into the image.
 
-#### Remote access requirement
-If you plan to use the uploader from another machine on your network, you must access it through a **real domain name** that points to your server. Google OAuth for web applications does not accept bare IP addresses as redirect URIs, so addresses such as `http://192.168.1.40:4321` cannot be used for the OAuth callback. `localhost` is allowed only for same-machine local use. [web:234][web:248]
+#### Do you need a domain name?
 
-Examples:
-- **Local-only setup:** `http://localhost:4321`
-- **Remote/NAS setup:** `https://yt.myhost.com:4321`
+Google OAuth for web applications does not accept bare IP addresses as redirect URIs. This means `http://192.168.1.40:4321` **cannot** be used for the OAuth callback - Google will reject it.
 
-> **Note:** A fake local hostname such as `` is not suitable here if you want Google OAuth redirect validation to work reliably. Google requires the redirect URI used by a web application to match an allowed hostname exactly, and IP-based/internal-hostname approaches are not accepted in the same way as `localhost`. [web:246][web:252]
+| Setup type | Access method | Domain needed? |
+|---|---|---|
+| Same-machine local use | `http://localhost:4321` | No |
+| NAS / remote machine | `https://myuploader.duckdns.org:4321` | **Yes** |
+
+If you are accessing the uploader from a different machine than the one running Docker (i.e. a NAS, server, or VM), you need a real domain name pointing to your server's local IP. The recommended free option is **DuckDNS**.
+
+> **Note:** If you do own a domain, please wait for an update after v1.0.0 releases for me to enable users to utilize their own domain names.
+
+> [!WARNING]
+> This might not be recommended however as currently the project does not feature any login method for protection.
+
+#### Setting up DuckDNS (NAS/remote users only)
+
+DuckDNS gives you a free subdomain ending in `.duckdns.org` - which Google OAuth accepts - that resolves to any IP you choose. You point it at your NAS's local IP, so all traffic stays on your LAN and never reaches the internet.
+
+1. Go to [duckdns.org](https://www.duckdns.org) and log in with Google, GitHub, or Reddit
+2. Choose a subdomain name (e.g. `myuploader`) - your address will be `myuploader.duckdns.org`
+3. In the **current ip** field, enter your NAS's local IP address (e.g. `192.168.1.40`)
+4. Click **update ip** - your subdomain is live immediately
+
+> **Note:** DuckDNS is normally used for dynamic public IPs. For a NAS with a fixed local IP, you do **not** need to run their update script - just set the IP once in the dashboard and you're done.
+
+Once set up, use `https://myuploader.duckdns.org:4321` anywhere this guide shows a remote address example. Replace `myuploader` with whatever subdomain you chose.
+
+---
 
 ### 2. Docker Setup
 
 #### Download and start the container
+
 Open a terminal where Docker Engine and Compose are present (for Windows, WSL integration is ideal) and run:
 
 ```bash
@@ -39,15 +63,18 @@ docker compose -f docker-compose.release.yml up -d
 
 Once running, access the web UI at:
 - **Local setup:** `http://localhost:4321/setup`
-- **Remote server setup:** `https://yt.myhost.com:4321/setup`
+- **NAS/remote setup:** `https://myuploader.duckdns.org:4321/setup`
 
-> **Note:** To update to a newer image, re-pull and recreate the container:
-```bash
-docker compose -f docker-compose.release.yml pull
-docker compose -f docker-compose.release.yml up -d --force-recreate
-```
+> **To update to a newer image:**
+> ```bash
+> docker compose -f docker-compose.release.yml pull
+> docker compose -f docker-compose.release.yml up -d --force-recreate
+> ```
+
+---
 
 ### 3. Google Cloud and YouTube API Credentials
+
 This app requires you to create your own Google Cloud project to authenticate with the YouTube Data API v3. Google does not allow a single set of credentials to be shared publicly for uploading purposes.
 
 #### Step 1 - Create a Google Cloud Project
@@ -80,24 +107,28 @@ This app requires you to create your own Google Cloud project to authenticate wi
 3. Set the application type to **Web Application** and name it anything (e.g. `my-yt-uploader`)
 4. Under **Authorised redirect URIs**, click **+ Add URI** and enter your redirect URI:
    - **Local setup:** `http://localhost:4321/api/auth/callback`
-   - **Remote server setup:** `https://yt.myhost.com:4321/api/auth/callback`
+   - **NAS/remote setup:** `https://myuploader.duckdns.org:4321/api/auth/callback`
 5. Click **Create**, then **Download JSON**
 
 > **Important:** Download the JSON immediately - this is the only time the download option is shown. If you miss it, you will need to delete and recreate the credential.
 
 6. Rename the downloaded file to `client_secret.json` (optional but recommended)
 
-> The redirect URI entered here must match exactly what the app uses. The setup wizard will display the exact URI once you enter your server address in Step 1 of the setup page - use that to double-check. Redirect URIs must match exactly, including protocol, hostname, port, and path. [web:250][web:253]
+> The redirect URI entered here must match exactly what the app uses. The setup wizard will display the exact URI once you enter your server address in Step 1 of the setup page - use that to double-check. Redirect URIs must match exactly, including protocol, hostname, port, and path.
+
+---
 
 ### 4. First-Run Setup
 
 Navigate to your setup page:
 - **Local setup:** `http://localhost:4321/setup`
-- **Remote server setup:** `https://yt.myhost.com:4321/setup`
+- **NAS/remote setup:** `https://myuploader.duckdns.org:4321/setup`
 
 If no credentials are detected, you will be automatically redirected there. The setup page walks through a four-step wizard before the uploader is accessible:
 
 1. **Set your server address** - Enter the address you use to reach this page. You can copy it straight from your browser's address bar. This is required so Google knows where to redirect you after login.
+   - Local: `http://localhost:4321`
+   - NAS/remote: `https://myuploader.duckdns.org:4321`
 2. **Upload your `client_secret.json`** - via drag-and-drop or the file browser
 3. **Click "Connect YouTube Account"** - you will be redirected to Google's OAuth consent screen; sign in and approve access, and you will be returned to the setup page automatically
 4. **Ready** - the **Ready to proceed?** card becomes active and you can navigate to the uploader
@@ -108,7 +139,7 @@ A `tokens.json` file is saved to the `auth/` volume automatically. This only nee
 
 > **Note:** `client_secret.json` and `tokens.json` are listed in `.gitignore` and will never be committed. Never share these files publicly.
 
-***
+---
 
 ## How It Works
 > Note: Architecture and tech stack are subject to change as the project evolves.
@@ -129,7 +160,7 @@ The container is designed to run persistently alongside other services on a NAS 
 - **YouTube Integration:** [YouTube Data API v3 (OAuth 2.0)](https://developers.google.com/youtube/v3/guides/authentication)
 - **Containerization:** Docker / Docker Compose
 
-***
+---
 
 ## Features
 > Note: Features, planned or otherwise, are subject to change as the project evolves.
@@ -151,7 +182,7 @@ The container is designed to run persistently alongside other services on a NAS 
 - **Additional notification channels** - Beyond in-browser notifications, exploring options like webhooks or self-hosted push services (e.g. ntfy, Gotify) for truly headless setups
 - **Mount point configuration** - Setup UI for configuring the watched folder path and auth directory, so no manual `docker-compose.yml` edits are needed for common cases
 
-***
+---
 
 ## Docker Configuration
 
@@ -201,9 +232,7 @@ docker run -p 4321:4321 \
 | `AUTH_DIR` | No | `/auth` | Path to the auth volume inside the container |
 | `DATA_DIR` | No | `/data` | Path to the data volume inside the container |
 | `VIDEOS_DIR` | No | `/videos` | Path to the videos volume inside the container |
-| `PUBLIC_URL` | No | *(set via setup UI)* | The externally reachable base URL of this instance, such as `http://localhost:4321` for local use or `https://yt.myhost.com:4321` for remote use. If set, it skips the server address step in the setup wizard. |
-
-> `PUBLIC_URL` should be `http://localhost:4321` for same-machine local use, or a real domain such as `https://yt.myhost.com:4321` for remote use. Do not use bare IP addresses for Google OAuth web-app redirects. [web:234][web:248]
+| `PUBLIC_URL` | No | *(set via setup UI)* | The externally reachable base URL of this instance. Use `http://localhost:4321` for same-machine local use, or `https://myuploader.duckdns.org:4321` for NAS/remote use. If set, it skips the server address step in the setup wizard. Do not use bare IP addresses - Google OAuth does not accept them. |
 
 ### Sidecar Metadata (`.meta.json`)
 
@@ -235,12 +264,12 @@ All fields are optional - any omitted field leaves the corresponding form field 
 
 Files with a recognised sidecar are marked with a **META** badge in the file panel. Invalid or malformed `.meta.json` files are silently ignored and the form remains blank.
 
-***
+---
 
 ## Known Constraints
 The YouTube Data API v3 has a default quota of **10,000 units per day**. Each video upload costs **1,600 units**, which works out to a maximum of **~6 uploads per day** on the default allocation. If this becomes a bottleneck, a quota increase can be requested through the [Google Cloud Console](https://console.cloud.google.com/).
 
-***
+---
 
 ## Development Status
 This is a solo project currently in very early development. Features will be implemented and polished over time - don't expect a fully finished product just yet.
@@ -248,6 +277,8 @@ This is a solo project currently in very early development. Features will be imp
 Want to contribute? Remember to create an issue and read the [wiki](https://github.com/Mr-KayZ/Docker-YT-Uploader/wiki) to quickly get up to speed on how to set up the dev space locally!
 
 ### Roadmap
+
+> **Note:** Roadmap is subject to change as the project evolves, and major bugs are found which need to be addressed.
 
 | Version | Milestone | Status |
 |---|---|---|
@@ -262,6 +293,7 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 | 0.9.0 | Mount point configuration - setup UI for watched folder, auth, and data directories | Complete |
 | 0.9.1 | Setup UX polish - proceed card, button alignment fixes | Complete |
 | 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI | Complete |
+| 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS | Complete |
 | 0.9.2 | Resumable uploads + live upload progress indicator + spinner (bottom-left card) | In Progress |
 | 0.9.3 | Upload info panel - progress bar, upload speed, quota usage | Planned |
 | 0.9.4 | In-browser notifications - toast on completion + bell popover with history | Planned |
@@ -273,11 +305,8 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 | 0.9.10 | Final bug fixing round and testing | Planned |
 | 1.0.0 | All key and planned features complete; end-to-end Docker tested | Target |
 
-> Remember to tag releases with `git tag <version>` and `git push origin <version>` to trigger the Docker image build on GitHub Actions.
-
 ### Fixes to Implement
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
-- **Figure out how to get Google OAuth working** - Have a hosted callback service built into the docker container... there's no other way
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`

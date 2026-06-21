@@ -568,7 +568,8 @@ const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
             <p class="path-section-label">Saved - applies on next restart</p>
             <div class="path-row">
               <span class="path-label">Videos</span><code id="savedVideos"
-                >-</code>
+                >-</code
+              >
             </div>
             <div class="path-row">
               <span class="path-label">Auth</span><code id="savedAuth">-</code>
@@ -581,7 +582,8 @@ const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
             <p class="path-section-label">Active - current running container</p>
             <div class="path-row">
               <span class="path-label">Videos</span><code id="activeVideos"
-                >-</code>
+                >-</code
+              >
             </div>
             <div class="path-row">
               <span class="path-label">Auth</span><code id="activeAuth">-</code>
@@ -636,13 +638,14 @@ const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
                   <input
                     type="text"
                     id="publicUrlInput"
-                    placeholder="e.g. http://yt-uploader.local:4321"
+                    placeholder="e.g. https://myuploader.duckdns.org:4321"
                     autocomplete="off"
                     spellcheck="false"
                   />
                   <p class="field-hint">
-                    Copy from your address bar, e.g.{" "}
-                    <code>http://yt-uploader.local:4321</code>
+                    For NAS/remote use, enter your DuckDNS address, e.g.{" "}
+                    <code>https://myuploader.duckdns.org:4321</code>. For
+                    same-machine use, enter <code>http://localhost:4321</code>.
                   </p>
                 </div>
                 <div class="mount-status" id="urlStatus" />
