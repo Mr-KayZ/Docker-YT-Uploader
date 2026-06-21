@@ -36,7 +36,7 @@ If you are accessing the uploader from a different machine than the one running 
 
 DuckDNS gives you a free subdomain ending in `.duckdns.org` - which Google OAuth accepts - that resolves to any IP you choose. You point it at your NAS's local IP, so all traffic stays on your LAN and never reaches the internet.
 
-1. Go to [duckdns.vercel.app](https://duckdns.vercel.app/) and log in with Google, GitHub, or Reddit
+1. Go to [duckdns.org](https://www.duckdns.org) and log in with Google, GitHub, or Reddit
 2. Choose a subdomain name (e.g. `myuploader`) - your address will be `myuploader.duckdns.org`
 3. In the **current ip** field, enter your NAS's local IP address (e.g. `192.168.1.40`)
 4. Click **update ip** - your subdomain is live immediately
