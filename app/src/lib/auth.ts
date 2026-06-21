@@ -9,7 +9,7 @@ import { AUTH_DIR } from "./paths.ts";
 
 const SECRET_PATH = path.join(AUTH_DIR, "client_secret.json");
 const TOKENS_PATH = path.join(AUTH_DIR, "tokens.json");
-const REDIRECT_URI = "http://localhost:4321/api/auth/callback";
+//const REDIRECT_URI = "http://localhost:4321/api/auth/callback";
 
 export const SCOPES = [
   "https://www.googleapis.com/auth/youtube.upload",
@@ -56,9 +56,9 @@ export async function saveClientSecret(content: string): Promise<void> {
 
 // OAuth2 client
 // ------------------------------------------------------------------------------------------------
-export async function createOAuthClient() {
+export async function createOAuthClient(redirectUri = "http://localhost:4321/api/auth/callback") {
   const { client_id, client_secret } = await loadClientSecret();
-  return new google.auth.OAuth2(client_id, client_secret, REDIRECT_URI);
+  return new google.auth.OAuth2(client_id, client_secret, redirectUri);
 }
 
 export async function getAuthenticatedClient() {

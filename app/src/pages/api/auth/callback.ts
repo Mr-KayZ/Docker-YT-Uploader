@@ -7,7 +7,7 @@ import { createOAuthClient, saveTokens } from "../../../lib/auth.ts";
 const redirect = (location: string) =>
   new Response(null, { status: 302, headers: { Location: location } });
 
-export const GET: APIRoute = async ({ url }) => {
+export const GET: APIRoute = async ({ url, request }) => {
   const code = url.searchParams.get("code");
   const error = url.searchParams.get("error");
 
@@ -15,7 +15,11 @@ export const GET: APIRoute = async ({ url }) => {
     return redirect(`/setup?error=${encodeURIComponent(error ?? "no_code")}`);
 
   try {
-    const client = await createOAuthClient();
+    const host = request.headers.get("host") ?? "localhost:4321";
+    const proto = request.headers.get("x-forwarded-proto") ?? "http";
+    const redirectUri = `${proto}://${host}/api/auth/callback`;
+
+    const client = await createOAuthClient(redirectUri);
     const { tokens } = await client.getToken(code);
     await saveTokens(tokens);
     return redirect("/setup");

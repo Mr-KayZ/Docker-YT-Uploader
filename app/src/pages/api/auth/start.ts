@@ -11,11 +11,15 @@ import {
 const redirect = (location: string) =>
   new Response(null, { status: 302, headers: { Location: location } });
 
-export const GET: APIRoute = async () => {
+export const GET: APIRoute = async ({ request }) => {
   if (!hasClientSecret()) return redirect("/setup");
 
   try {
-    const client = await createOAuthClient();
+    const host = request.headers.get("host") ?? "localhost:4321";
+    const proto = request.headers.get("x-forwarded-proto") ?? "http";
+    const redirectUri = `${proto}://${host}/api/auth/callback`;
+
+    const client = await createOAuthClient(redirectUri);
     const authUrl = client.generateAuthUrl({
       access_type: "offline",
       prompt: "consent",
