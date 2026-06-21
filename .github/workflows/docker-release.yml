@@ -4,6 +4,7 @@ on:
   push:
     tags:
       - "v*.*.*"   # triggers on v0.9.1, v1.0.0, etc.
+      - "v*.*.*-*"      # v0.9.1-beta, v1.0.0-rc1
 
 env:
   REGISTRY: ghcr.io

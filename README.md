@@ -28,6 +28,12 @@ docker compose -f docker-compose.release.yml up -d
 ```
 Once running, access the web UI at: **http://localhost:4321/setup**
 
+> **Note:** You will need to re-pull and recreate the container on the server if a new image is pushed manually:
+```bash
+docker compose -f docker-compose.release.yml pull
+docker compose -f docker-compose.release.yml up -d --force-recreate
+```
+
 ### 3. Google Cloud and YouTube API Credentials
 This app requires you to create your own Google Cloud project to authenticate with the YouTube Data API v3. Google does not allow a single set of credentials to be shared publicly for uploading purposes.
 
