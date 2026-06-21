@@ -234,6 +234,11 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
 - **Verify solo Docker container operation** - Confirm the app works correctly as a standalone Docker image; build and test independent of Compose
+  - Major Bug: Redirect appears to break the docker container!
+  - When doing live testing with the container from an actual NAS environment (Debian VM with docker), initially the webUI does load from the client computer connecting to the server `http://<IP Address of server>:4321`
+  - However when the user clicks "Upload Credentials", the Google OAuth redirect leads back to `localhost` of the client computer and not the server.
+  - Reconnecting back to `http://<IP Address of server>:4321`, it only shows the same page as Upload Credentials, the authentication (and therefore token creation) never happened.
+  - When this is fixed, release tag 0.9.1.1
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
