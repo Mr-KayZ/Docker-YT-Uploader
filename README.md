@@ -135,7 +135,7 @@ This app requires you to create your own Google Cloud project to authenticate wi
 3. Click **Save**
 
 > [!IMPORTANT]
-> This step is required. While the app is in Testing status, only approved test users can complete the OAuth flow. Formal Google app verification is **not** required for self-hosted personal use - staying in Testing mode permanently is intentional and sufficient.
+> **This step is required.** While the app is in Testing status, only approved test users can complete the OAuth flow. Formal Google app verification is **not** required for self-hosted personal use - staying in Testing mode permanently is intentional and sufficient.
 
 #### Step 5 - Create the OAuth Credentials
 
@@ -151,8 +151,8 @@ This app requires you to create your own Google Cloud project to authenticate wi
 
 6. Rename the downloaded file to `client_secret.json` (optional but recommended)
 
-> [!NOTE]
-> The redirect URI entered here must match exactly what the app uses. The setup wizard will display the exact URI once you enter your server address in Step 1 of the setup page - use that to double-check. Redirect URIs must match exactly, including protocol, hostname, port, and path.
+> [!IMPORTANT]
+> **The redirect URI entered here must match exactly what the app uses.** The setup wizard will display the exact URI once you enter your server address in Step 1 of the setup page - use that to double-check. Redirect URIs must match exactly, including protocol, hostname, port, and path.
 
 ---
 
