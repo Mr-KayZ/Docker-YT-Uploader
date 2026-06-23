@@ -1,4 +1,4 @@
-# Docker-YT-Uploader: Ver. 0.9.1.2
+# Docker-YT-Uploader: Ver. 0.9.1.3
 
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
