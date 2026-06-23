@@ -242,6 +242,8 @@ The app requires three host directories to be mounted into the container. These 
 | Auth   | `/auth`      | Stores `client_secret.json` and OAuth tokens                                 |
 | Data   | `/data`      | Stores queue state and persistence files                                     |
 
+> **Note:** If there is any buggy configurations, remember to head to the `/auth` and `/data` directories and purge any information there for you to head back to the setup page.
+
 **Docker Compose example:**
 
 ```yaml
@@ -342,6 +344,7 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 | 0.9.1   | Setup UX polish - proceed card, button alignment fixes                                         | Complete    |
 | 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI             | Complete    |
 | 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS        | Complete    |
+| 0.9.1.3 | Major fix of Internal Server error bug induced by config.ts update                             | Complete    |
 | 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)                | In Progress |
 | 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | Planned     |
 | 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | Planned     |
@@ -357,10 +360,10 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
-- **Major bug** - Fix the live image that keeps giving 500: Internal server error despite docker status being up
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
+- Allow **reset configuration** or **reset application** to delete all configs in `/data` and `/auth`. `/videos` must not be touched however.
 - **Tooltips on icon buttons** - Header icon buttons (bell, logs, etc.) should show a descriptive tooltip on hover
 - **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should appear in the bell popover history
 - **Have a settings page** - Allows changing of ports, updating of app (if possible), etc.
