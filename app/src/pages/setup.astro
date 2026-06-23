@@ -1,7 +1,7 @@
 ---
 // app/src/pages/setup.astro
 import AppLayout from "../layouts/AppLayout.astro";
-import { hasPublicUrl, getPublicUrl } from "../lib/config.ts";
+import { hasPublicUrl, tryGetPublicUrl } from "../lib/config.ts";
 import {
   hasClientSecret,
   hasTokens,
@@ -15,7 +15,7 @@ import {
 const clientSecretExists = hasClientSecret();
 const tokensExist = hasTokens();
 const publicUrlSet = await hasPublicUrl();
-const currentPublicUrl = await getPublicUrl();
+const currentPublicUrl = await tryGetPublicUrl();
 
 let channelName: string | null = null;
 if (clientSecretExists && tokensExist) {

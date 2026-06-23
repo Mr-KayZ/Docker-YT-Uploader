@@ -11,8 +11,9 @@ type AppConfig = {
 };
 
 function isIpAddress(hostname: string): boolean {
-  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) return true; // IPv4
-  if (/^\[?[a-fA-F0-9:]+\]?$/.test(hostname) && hostname.includes(":")) return true; // IPv6-ish
+  if (/^\d{1,3}(\.\d{1,3}){3}$/.test(hostname)) return true;
+  if (/^\[?[a-fA-F0-9:]+\]?$/.test(hostname) && hostname.includes(":"))
+    return true;
   return false;
 }
 
@@ -32,20 +33,25 @@ function isValidRedirectHost(hostname: string): boolean {
   if (!host.includes(".")) return false;
 
   const labels = host.split(".");
-  return labels.every((label) => /^[a-z0-9-]+$/i.test(label) && !label.startsWith("-") && !label.endsWith("-"));
+  return labels.every(
+    (label) =>
+      /^[a-z0-9-]+$/i.test(label) &&
+      !label.startsWith("-") &&
+      !label.endsWith("-"),
+  );
 }
 
 /**
  * Normalize and validate the externally reachable base URL used for OAuth callbacks.
  *
- * Allowed examples:
+ * Allowed:
  *   localhost                          -> http://localhost:4321
  *   http://localhost                   -> http://localhost:4321
  *   myuploader.duckdns.org             -> https://myuploader.duckdns.org:4321
  *   https://myuploader.duckdns.org     -> https://myuploader.duckdns.org:4321
  *   https://yt.myhost.com:8443         -> https://yt.myhost.com:8443
  *
- * Rejected examples:
+ * Rejected:
  *   192.168.1.40
  *   http://192.168.1.40:4321
  *   yt-uploader.local
@@ -69,7 +75,9 @@ export function normalisePublicUrl(raw: string): string {
   try {
     url = new URL(candidate);
   } catch {
-    throw new Error("Enter a valid server address, such as localhost or https://yt.myhost.com.");
+    throw new Error(
+      "Enter a valid server address, such as localhost or https://yt.myhost.com.",
+    );
   }
 
   if (!["http:", "https:"].includes(url.protocol)) {
@@ -113,18 +121,56 @@ export async function saveConfig(config: AppConfig): Promise<void> {
   await writeFile(CONFIG_PATH, JSON.stringify(config, null, 2), "utf-8");
 }
 
-export async function getPublicUrl(): Promise<string> {
+/**
+ * Returns the validated public URL, or null if nothing is configured yet.
+ *
+ * Safe to call during setup page load - will NOT throw when PUBLIC_URL is
+ * absent or when the container is running on a NAS with no env var set.
+ * Will still throw if a value IS present but fails validation (IP, .local, etc.)
+ * so misconfiguration is still surfaced immediately.
+ *
+ * Use this in setup.astro. Use requirePublicUrl() / getPublicUrl() everywhere else.
+ */
+export async function tryGetPublicUrl(): Promise<string | null> {
   const config = await loadConfig();
 
   if (config.publicUrl) {
-    return normalisePublicUrl(config.publicUrl);
+    return normalisePublicUrl(config.publicUrl); // stored - validate and return
   }
 
   if (process.env.PUBLIC_URL) {
-    return normalisePublicUrl(process.env.PUBLIC_URL);
+    return normalisePublicUrl(process.env.PUBLIC_URL); // env var - validate and return
   }
 
-  return "http://localhost:4321";
+  return null; // nothing configured yet - safe, no throw
+}
+
+/**
+ * Returns the validated public URL.
+ * Falls back to http://localhost:4321 when nothing is configured.
+ *
+ * Use this anywhere a URL is needed but localhost is an acceptable fallback
+ * (e.g. display purposes, non-OAuth routes).
+ */
+export async function getPublicUrl(): Promise<string> {
+  return (await tryGetPublicUrl()) ?? "http://localhost:4321";
+}
+
+/**
+ * Returns the validated public URL.
+ * Throws if nothing is configured or if the configured value is invalid.
+ *
+ * Use this in auth.ts and anywhere the OAuth redirect URI is constructed -
+ * places where a missing URL is a hard error, not a recoverable state.
+ */
+export async function requirePublicUrl(): Promise<string> {
+  const url = await tryGetPublicUrl();
+  if (!url) {
+    throw new Error(
+      "No server address configured. Complete Step 1 of the setup page before authenticating.",
+    );
+  }
+  return url;
 }
 
 export async function hasPublicUrl(): Promise<boolean> {
@@ -141,6 +187,6 @@ export async function savePublicUrl(raw: string): Promise<string> {
 }
 
 export async function getOAuthRedirectUri(): Promise<string> {
-  const base = await getPublicUrl();
+  const base = await requirePublicUrl(); // OAuth URI needs a real URL - throws if missing
   return `${base}/api/auth/callback`;
 }
