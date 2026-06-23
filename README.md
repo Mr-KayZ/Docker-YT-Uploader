@@ -177,7 +177,8 @@ The middleware blocks access to all non-setup routes until all steps are complet
 
 A `tokens.json` file is saved to the `auth/` volume automatically. This only needs to be done once; tokens are refreshed automatically by the app going forward.
 
-> **Note:** `client_secret.json` and `tokens.json` are listed in `.gitignore` and will never be committed. Never share these files publicly.
+> [!NOTE]
+> `client_secret.json` and `tokens.json` are listed in `.gitignore` and will never be committed. Never share these files publicly.
 
 ---
 
@@ -246,7 +247,8 @@ The app requires three host directories to be mounted into the container. These 
 | Auth   | `/auth`      | Stores `client_secret.json` and OAuth tokens                                 |
 | Data   | `/data`      | Stores queue state and persistence files                                     |
 
-> **Note:** If there is any buggy configurations, remember to head to the `/auth` and `/data` directories and purge any information there for you to head back to the setup page.
+> [!TIP]
+> If there is any buggy configurations, remember to head to the `/auth` and `/data` directories and purge any information there for you to head back to the setup page.
 
 **Docker Compose example:**
 
@@ -278,7 +280,7 @@ docker run -p 4321:4321 \
 ### Environment Variables
 
 | Variable     | Required | Default              | Description                                                                                                                                                                                                                                                                                              |
-| ------------ | -------- | -------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| ------------ | -------- | -------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `NODE_ENV`   | No       | `production`         | Node environment                                                                                                                                                                                                                                                                                         |
 | `HOST`       | No       | `0.0.0.0`            | Interface the server binds to                                                                                                                                                                                                                                                                            |
 | `PORT`       | No       | `4321`               | Port the server listens on                                                                                                                                                                                                                                                                               |
@@ -336,36 +338,37 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 > [!NOTE]
 > Roadmap is subject to change as the project evolves, and major bugs are found which need to be addressed.
 
-| Version | Milestone                                                                                      | Status      |
-| ------- | ---------------------------------------------------------------------------------------------- | ----------- |
-| 0.1.0   | Project scaffold - Astro + Docker + basic routing                                              | Complete    |
-| 0.2.0   | Auth system - OAuth setup page, credential upload, callback                                    | Complete    |
-| 0.3.0   | File watcher + queue persistence                                                               | Complete    |
-| 0.4.0   | Uploader core + scheduler                                                                      | Complete    |
-| 0.5.0   | Web UI - metadata form, file list panel, enqueue flow                                          | Complete    |
-| 0.6.0   | Cross-file integration fixes, route corrections, server init hooks                             | Complete    |
-| 0.7.0   | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | Complete    |
-| 0.8.0   | Sidecar `.meta.json` support - auto-fill metadata form from file                               | Complete    |
-| 0.9.0   | Mount point configuration - setup UI for watched folder, auth, and data directories            | Complete    |
-| 0.9.1   | Setup UX polish - proceed card, button alignment fixes                                         | Complete    |
-| 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI             | Complete    |
-| 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS        | Complete    |
-| 0.9.1.3 | Major fix of Internal Server error bug induced by config.ts update                             | Complete    |
-| 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)                | In Progress |
-| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | Planned     |
-| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | Planned     |
-| 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                          | Planned     |
-| 0.9.6   | Playlist support - pull channel playlists, assign at upload time                               | Planned     |
-| 0.9.7   | Docker log viewer - dedicated page for live container console output                           | Planned     |
-| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify - May require TLS cert               | Planned     |
-| 0.9.9   | Drag-and-drop video upload directly into the web UI                                            | Planned     |
-| 0.9.10  | Final bug fixing round and testing                                                             | Planned     |
-| 1.0.0   | All key and planned features complete; end-to-end Docker tested                                | Target      |
+| Version | Milestone                                                                                      | Status          |
+| ------- | ---------------------------------------------------------------------------------------------- | --------------- |
+| 0.1.0   | Project scaffold - Astro + Docker + basic routing                                              | [x] Complete    |
+| 0.2.0   | Auth system - OAuth setup page, credential upload, callback                                    | [x] Complete    |
+| 0.3.0   | File watcher + queue persistence                                                               | [x] Complete    |
+| 0.4.0   | Uploader core + scheduler                                                                      | [x] Complete    |
+| 0.5.0   | Web UI - metadata form, file list panel, enqueue flow                                          | [x] Complete    |
+| 0.6.0   | Cross-file integration fixes, route corrections, server init hooks                             | [x] Complete    |
+| 0.7.0   | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | [x] Complete    |
+| 0.8.0   | Sidecar `.meta.json` support - auto-fill metadata form from file                               | [x] Complete    |
+| 0.9.0   | Mount point configuration - setup UI for watched folder, auth, and data directories            | [x] Complete    |
+| 0.9.1   | Setup UX polish - proceed card, button alignment fixes                                         | [x] Complete    |
+| 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI             | [x] Complete    |
+| 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS        | [x] Complete    |
+| 0.9.1.3 | Major fix of Internal Server error bug induced by config.ts update                             | [x] Complete    |
+| 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)                | [ ] In Progress |
+| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | [ ] Planned     |
+| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | [ ] Planned     |
+| 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                          | [ ] Planned     |
+| 0.9.6   | Playlist support - pull channel playlists, assign at upload time                               | [ ] Planned     |
+| 0.9.7   | Docker log viewer - dedicated page for live container console output                           | [ ] Planned     |
+| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify - May require TLS cert               | [ ] Planned     |
+| 0.9.9   | Drag-and-drop video upload directly into the web UI                                            | [ ] Planned     |
+| 0.9.10  | Final bug fixing round and testing                                                             | [ ] Planned     |
+| 1.0.0   | **All key and planned features complete; end-to-end Docker tested**                            | [ ] **Target**  |
 
 ### Fixes to Implement
 
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
+- **Highlighting of selected video in Uploader** - Highlight selected video by darkening it slightly and having a border around it.
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
