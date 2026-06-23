@@ -152,7 +152,7 @@ This app requires you to create your own Google Cloud project to authenticate wi
 
 6. Rename the downloaded file to `client_secret.json` (optional but recommended)
 
-> [!IMPORTANT]
+> [!NOTE]
 > **The redirect URI entered here must match exactly what the app uses.** The setup wizard will display the exact URI once you enter your server address in Step 1 of the setup page - use that to double-check. Redirect URIs must match exactly, including protocol, hostname, port, and path.
 
 ---
