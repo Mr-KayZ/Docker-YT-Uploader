@@ -29,7 +29,8 @@ Google OAuth for web applications does not accept bare IP addresses as redirect 
 
 If you are accessing the uploader from a different machine than the one running Docker (i.e. a NAS, server, or VM), you need a real domain name pointing to your server's local IP. The recommended free option is **DuckDNS**.
 
-> **Note:** If you do own a domain, please wait for an update after v1.0.0 releases for me to enable users to utilize their own domain names.
+> [!NOTE]
+> If you do own a domain, please wait for an update after v1.0.0 releases for me to enable users to utilize their own domain names.
 
 > [!WARNING]
 > This might not be recommended however as currently the project does not feature any login method for protection.
@@ -43,25 +44,21 @@ DuckDNS gives you a free subdomain ending in `.duckdns.org` - which Google OAuth
 3. In the **current ip** field, enter your NAS's local IP address (e.g. `192.168.1.40`)
 4. Click **update ip** - your subdomain is live immediately
 
-> **Note:** DuckDNS is normally used for dynamic public IPs. For a NAS with a fixed local IP, you do **not** need to run their update script - just set the IP once in the dashboard and you're done.
+> [!NOTE]
+> DuckDNS is normally used for dynamic public IPs. For a NAS with a fixed local IP, you do **not** need to run their update script - just set the IP once in the dashboard and you're done.
 
 Once set up, use `http://myuploader.duckdns.org:4321` anywhere this guide shows a remote address example. Replace `myuploader` with whatever subdomain you chose.
 
-> [!NOTE]
+> [!WARNING]
 > **Accessing via HTTP, not HTTPS**
-> Even though DuckDNS gives you a `.duckdns.org` domain, the container does not
-> serve HTTPS - there is no TLS certificate. Your browser may show a security
-> warning or refuse to load the page when using `https://`. If this happens,
-> switch to `http://` manually in your address bar:
+>
+> Even though DuckDNS gives you a `.duckdns.org` domain, the container does not serve HTTPS - there is no TLS certificate. Your browser may show a security warning or refuse to load the page when using `https://`. If this happens, switch to `http://` manually in your address bar:
 >
 > ```
 > http://myuploader.duckdns.org:4321
 > ```
 >
-> This is safe because all traffic stays on your local network - DuckDNS only
-> resolves the name to your NAS's LAN IP, it never routes traffic through the
-> internet. HTTPS support (via self-signed cert or Let's Encrypt) is planned for
-> a future release.
+> This is safe because all traffic stays on your local network - DuckDNS only resolves the name to your NAS's LAN IP, it never routes traffic through the internet. HTTPS support (via self-signed cert or Let's Encrypt) is planned for a future release.
 
 #### Alternatives to DuckDNS
 
@@ -97,6 +94,7 @@ Once running, access the web UI at:
 - **Local setup:** `http://localhost:4321/setup`
 - **NAS/remote setup:** `http://myuploader.duckdns.org:4321/setup`
 
+> [!TIP]
 > **To update to a newer image:**
 >
 > ```bash
@@ -136,6 +134,7 @@ This app requires you to create your own Google Cloud project to authenticate wi
 2. Click **+ Add Users** and add your Google account email
 3. Click **Save**
 
+> [!IMPORTANT]
 > This step is required. While the app is in Testing status, only approved test users can complete the OAuth flow. Formal Google app verification is **not** required for self-hosted personal use - staying in Testing mode permanently is intentional and sufficient.
 
 #### Step 5 - Create the OAuth Credentials
@@ -152,6 +151,7 @@ This app requires you to create your own Google Cloud project to authenticate wi
 
 6. Rename the downloaded file to `client_secret.json` (optional but recommended)
 
+> [!NOTE]
 > The redirect URI entered here must match exactly what the app uses. The setup wizard will display the exact URI once you enter your server address in Step 1 of the setup page - use that to double-check. Redirect URIs must match exactly, including protocol, hostname, port, and path.
 
 ---
@@ -182,7 +182,8 @@ A `tokens.json` file is saved to the `auth/` volume automatically. This only nee
 
 ## How It Works
 
-> Note: Architecture and tech stack are subject to change as the project evolves.
+> [!NOTE]
+> Architecture and tech stack are subject to change as the project evolves.
 
 ### Foundation
 
@@ -207,7 +208,8 @@ The container is designed to run persistently alongside other services on a NAS 
 
 ## Features
 
-> Note: Features, planned or otherwise, are subject to change as the project evolves.
+> [!NOTE]
+> Features, planned or otherwise, are subject to change as the project evolves.
 
 - **Web interface for metadata editing** - Title, description, tags, category, privacy, schedule
 - **Folder watch** - Files appearing in the configured watch folder are detected automatically and surfaced in the web UI
@@ -230,7 +232,8 @@ The container is designed to run persistently alongside other services on a NAS 
 
 ## Docker Configuration
 
-> **Note:** Resource limits and additional environment variable configuration will be documented here as the project matures.
+> [!NOTE]
+> Resource limits and additional environment variable configuration will be documented here as the project matures.
 
 ### Volume Mounts
 
@@ -268,6 +271,7 @@ docker run -p 4321:4321 \
   ghcr.io/mr-kayz/docker-yt-uploader:latest
 ```
 
+> [!TIP]
 > Mount paths can be changed in the Setup UI under **Mount Points**. Saved changes apply on the next container restart. The active paths shown in the UI reflect what the currently running container was started with.
 
 ### Environment Variables
@@ -328,7 +332,8 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 
 ### Roadmap
 
-> **Note:** Roadmap is subject to change as the project evolves, and major bugs are found which need to be addressed.
+> [!NOTE]
+> Roadmap is subject to change as the project evolves, and major bugs are found which need to be addressed.
 
 | Version | Milestone                                                                                      | Status      |
 | ------- | ---------------------------------------------------------------------------------------------- | ----------- |
@@ -351,7 +356,7 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 | 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                          | Planned     |
 | 0.9.6   | Playlist support - pull channel playlists, assign at upload time                               | Planned     |
 | 0.9.7   | Docker log viewer - dedicated page for live container console output                           | Planned     |
-| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify                                      | Planned     |
+| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify - May require TLS cert               | Planned     |
 | 0.9.9   | Drag-and-drop video upload directly into the web UI                                            | Planned     |
 | 0.9.10  | Final bug fixing round and testing                                                             | Planned     |
 | 1.0.0   | All key and planned features complete; end-to-end Docker tested                                | Target      |
@@ -366,5 +371,5 @@ These are outstanding structural and UX improvements that don't map to a specifi
 - Allow **reset configuration** or **reset application** to delete all configs in `/data` and `/auth`. `/videos` must not be touched however.
 - **Tooltips on icon buttons** - Header icon buttons (bell, logs, etc.) should show a descriptive tooltip on hover
 - **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should appear in the bell popover history
-- **Have a settings page** - Allows changing of ports, updating of app (if possible), etc.
+- **Have a settings page** - Allows changing of ports, updating of app (if possible), etc. - Look into serving TLS certification as well from the container
 - **Introduce hardening** - Look into making it more secure for multi-user or production-ready environments
