@@ -147,7 +147,8 @@ This app requires you to create your own Google Cloud project to authenticate wi
    - **NAS/remote setup:** `http://myuploader.duckdns.org:4321/api/auth/callback`
 5. Click **Create**, then **Download JSON**
 
-> **Important:** Download the JSON immediately - this is the only time the download option is shown. If you miss it, you will need to delete and recreate the credential.
+> [!IMPORTANT]
+> **Download the JSON immediately** - this is the only time the download option is shown. If you miss it, you will need to delete and recreate the credential!
 
 6. Rename the downloaded file to `client_secret.json` (optional but recommended)
 
