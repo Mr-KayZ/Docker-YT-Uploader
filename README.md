@@ -25,7 +25,7 @@ Google OAuth for web applications does not accept bare IP addresses as redirect 
 | Setup type             | Access method                         | Domain needed? |
 | ---------------------- | ------------------------------------- | -------------- |
 | Same-machine local use | `http://localhost:4321`               | No             |
-| NAS / remote machine   | `https://myuploader.duckdns.org:4321` | **Yes**        |
+| NAS / remote machine   | `http://myuploader.duckdns.org:4321`  | **Yes**        |
 
 If you are accessing the uploader from a different machine than the one running Docker (i.e. a NAS, server, or VM), you need a real domain name pointing to your server's local IP. The recommended free option is **DuckDNS**.
 
@@ -38,14 +38,30 @@ If you are accessing the uploader from a different machine than the one running 
 
 DuckDNS gives you a free subdomain ending in `.duckdns.org` - which Google OAuth accepts - that resolves to any IP you choose. You point it at your NAS's local IP, so all traffic stays on your LAN and never reaches the internet.
 
-1. Go to [duckdns.org](https://www.duckdns.org) and log in with Google, GitHub, or Reddit
+1. Go to [duckdns.org](http://www.duckdns.org) and log in with Google, GitHub, or Reddit
 2. Choose a subdomain name (e.g. `myuploader`) - your address will be `myuploader.duckdns.org`
 3. In the **current ip** field, enter your NAS's local IP address (e.g. `192.168.1.40`)
 4. Click **update ip** - your subdomain is live immediately
 
 > **Note:** DuckDNS is normally used for dynamic public IPs. For a NAS with a fixed local IP, you do **not** need to run their update script - just set the IP once in the dashboard and you're done.
 
-Once set up, use `https://myuploader.duckdns.org:4321` anywhere this guide shows a remote address example. Replace `myuploader` with whatever subdomain you chose.
+Once set up, use `http://myuploader.duckdns.org:4321` anywhere this guide shows a remote address example. Replace `myuploader` with whatever subdomain you chose.
+
+> [!NOTE]
+> **Accessing via HTTP, not HTTPS**
+> Even though DuckDNS gives you a `.duckdns.org` domain, the container does not
+> serve HTTPS - there is no TLS certificate. Your browser may show a security
+> warning or refuse to load the page when using `https://`. If this happens,
+> switch to `http://` manually in your address bar:
+>
+> ```
+> http://myuploader.duckdns.org:4321
+> ```
+>
+> This is safe because all traffic stays on your local network - DuckDNS only
+> resolves the name to your NAS's LAN IP, it never routes traffic through the
+> internet. HTTPS support (via self-signed cert or Let's Encrypt) is planned for
+> a future release.
 
 #### Alternatives to DuckDNS
 
@@ -79,7 +95,7 @@ docker compose -f docker-compose.release.yml up -d
 Once running, access the web UI at:
 
 - **Local setup:** `http://localhost:4321/setup`
-- **NAS/remote setup:** `https://myuploader.duckdns.org:4321/setup`
+- **NAS/remote setup:** `http://myuploader.duckdns.org:4321/setup`
 
 > **To update to a newer image:**
 >
@@ -129,7 +145,7 @@ This app requires you to create your own Google Cloud project to authenticate wi
 3. Set the application type to **Web Application** and name it anything (e.g. `my-yt-uploader`)
 4. Under **Authorised redirect URIs**, click **+ Add URI** and enter your redirect URI:
    - **Local setup:** `http://localhost:4321/api/auth/callback`
-   - **NAS/remote setup:** `https://myuploader.duckdns.org:4321/api/auth/callback`
+   - **NAS/remote setup:** `http://myuploader.duckdns.org:4321/api/auth/callback`
 5. Click **Create**, then **Download JSON**
 
 > **Important:** Download the JSON immediately - this is the only time the download option is shown. If you miss it, you will need to delete and recreate the credential.
@@ -145,13 +161,13 @@ This app requires you to create your own Google Cloud project to authenticate wi
 Navigate to your setup page:
 
 - **Local setup:** `http://localhost:4321/setup`
-- **NAS/remote setup:** `https://myuploader.duckdns.org:4321/setup`
+- **NAS/remote setup:** `http://myuploader.duckdns.org:4321/setup`
 
 If no credentials are detected, you will be automatically redirected there. The setup page walks through a four-step wizard before the uploader is accessible:
 
 1. **Set your server address** - Enter the address you use to reach this page. You can copy it straight from your browser's address bar. This is required so Google knows where to redirect you after login.
    - Local: `http://localhost:4321`
-   - NAS/remote: `https://myuploader.duckdns.org:4321`
+   - NAS/remote: `http://myuploader.duckdns.org:4321`
 2. **Upload your `client_secret.json`** - via drag-and-drop or the file browser
 3. **Click "Connect YouTube Account"** - you will be redirected to Google's OAuth consent screen; sign in and approve access, and you will be returned to the setup page automatically
 4. **Ready** - the **Ready to proceed?** card becomes active and you can navigate to the uploader
@@ -262,7 +278,7 @@ docker run -p 4321:4321 \
 | `AUTH_DIR`   | No       | `/auth`              | Path to the auth volume inside the container                                                                                                                                                                                                                                                             |
 | `DATA_DIR`   | No       | `/data`              | Path to the data volume inside the container                                                                                                                                                                                                                                                             |
 | `VIDEOS_DIR` | No       | `/videos`            | Path to the videos volume inside the container                                                                                                                                                                                                                                                           |
-| `PUBLIC_URL` | No       | _(set via setup UI)_ | The externally reachable base URL of this instance. Use `http://localhost:4321` for same-machine local use, or `https://myuploader.duckdns.org:4321` for NAS/remote use. If set, it skips the server address step in the setup wizard. Do not use bare IP addresses - Google OAuth does not accept them. |
+| `PUBLIC_URL` | No       | _(set via setup UI)_ | The externally reachable base URL of this instance. Use `http://localhost:4321` for same-machine local use, or `http://myuploader.duckdns.org:4321` for NAS/remote use. If set, it skips the server address step in the setup wizard. Do not use bare IP addresses - Google OAuth does not accept them. |
 
 ### Sidecar Metadata (`.meta.json`)
 

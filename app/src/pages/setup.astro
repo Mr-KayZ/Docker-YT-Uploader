@@ -632,19 +632,21 @@ const setupComplete = publicUrlSet && clientSecretExists && tokensExist;
                   Enter the address you use to access this page - you can copy
                   it straight from your browser's address bar. This is required
                   so Google knows where to redirect you after login.
+
+                  Remember to utilize HTTP if you're using a reverse proxy without TLS, and include the port if it's not 80 or 443.
                 </p>
                 <div class="mount-field">
                   <label for="publicUrlInput">Server address</label>
                   <input
                     type="text"
                     id="publicUrlInput"
-                    placeholder="e.g. https://myuploader.duckdns.org:4321"
+                    placeholder="e.g. http://myuploader.duckdns.org:4321"
                     autocomplete="off"
                     spellcheck="false"
                   />
                   <p class="field-hint">
                     For NAS/remote use, enter your DuckDNS address, e.g.{" "}
-                    <code>https://myuploader.duckdns.org:4321</code>. For
+                    <code>http://myuploader.duckdns.org:4321</code>. For
                     same-machine use, enter <code>http://localhost:4321</code>.
                   </p>
                 </div>
