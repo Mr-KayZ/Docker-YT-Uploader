@@ -90,10 +90,10 @@ export function normalisePublicUrl(raw: string): string {
     );
   }
 
-  // Localhost may use http; real domains should use https
-  if (url.hostname !== "localhost" && url.protocol !== "https:") {
-    url.protocol = "https:";
-  }
+  // Remove this block entirely for now - no TLS cert, http is correct for LAN use
+  // if (url.hostname !== "localhost" && url.protocol !== "https:") {
+  //   url.protocol = "https:";
+  // }
 
   if (!url.port) {
     url.port = "4321";
