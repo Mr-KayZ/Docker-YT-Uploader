@@ -89,6 +89,8 @@ export const POST: APIRoute = async ({ request }) => {
       errorMessage: null,
       uploadStartedAt: null,
       uploadFinishedAt: null,
+      bytesUploaded: null,
+      totalBytes: null,
     };
 
     // Validate before writing any files to disk

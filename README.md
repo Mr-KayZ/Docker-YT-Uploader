@@ -373,6 +373,7 @@ These are outstanding structural and UX improvements that don't map to a specifi
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
 - Allow **reset configuration** or **reset application** to delete all configs in `/data` and `/auth`. `/videos` must not be touched however.
+  - Conversely, also add methods to select the previous setup pages, like re-uploading auth tokens, changing website/DNS, etc.
 - **Tooltips on icon buttons** - Header icon buttons (bell, logs, etc.) should show a descriptive tooltip on hover
 - **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should appear in the bell popover history
 - **Have a settings page** - Allows changing of ports, updating of app (if possible), etc. - Look into serving TLS certification as well from the container
