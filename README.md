@@ -1,4 +1,4 @@
-# Docker-YT-Uploader: Ver. 0.9.2
+# Docker-YT-Uploader: Ver. 0.9.3
 
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
@@ -354,8 +354,8 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 | 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS        | `[x]` Complete    |
 | 0.9.1.3 | Major fix of Internal Server error bug induced by config.ts update                             | `[x]` Complete    |
 | 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)                | `[x]` Complete    |
-| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | `[ ]` In Progress |
-| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | `[ ]` Planned     |
+| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | `[x]` Complete    |
+| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | `[ ]` In Progress |
 | 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                          | `[ ]` Planned     |
 | 0.9.6   | Playlist support - pull channel playlists, assign at upload time                               | `[ ]` Planned     |
 | 0.9.7   | Docker log viewer - dedicated page for live container console output                           | `[ ]` Planned     |
