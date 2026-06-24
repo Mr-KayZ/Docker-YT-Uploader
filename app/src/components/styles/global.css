@@ -12,7 +12,8 @@
 body {
   font-family: system-ui, sans-serif;
   background: #f5f5f5;
-  min-height: 100vh;
+  height: 100dvh;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
 }
@@ -21,8 +22,8 @@ body {
 .workspace {
   display: flex;
   flex: 1;
+  min-height: 0;
   overflow: hidden;
-  height: calc(100vh - 53px);
 }
 
 /* --- Badges --- */

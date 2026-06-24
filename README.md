@@ -376,4 +376,4 @@ These are outstanding structural and UX improvements that don't map to a specifi
 - **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should appear in the bell popover history
 - **Have a settings page** - Allows changing of ports, updating of app (if possible), etc. - Look into serving TLS certification as well from the container
 - **Introduce hardening** - Look into making it more secure for multi-user or production-ready environments
-- **Allow user to select done videos** - Once videos are uploaded, allow the user to select the done videos, and have the youtube link attached at the top of the page of the selected video
+- **Auto-refresh uploader page** - Once uploaded, the configuration page should refresh to Done page.
