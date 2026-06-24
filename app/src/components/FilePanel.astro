@@ -19,6 +19,7 @@
 </aside>
 
 <style>
+  /* ── Scoped: elements that exist in this component's own template ── */
   .panel-left {
     width: 320px;
     flex-shrink: 0;
@@ -62,8 +63,9 @@
     line-height: 1.6;
   }
 
-  /* File items - injected dynamically but styled here */
-  .file-item {
+  /* ── Global: file items are injected via innerHTML so Astro never
+       hashes them — these must be unscoped to match ── */
+  :global(.file-item) {
     display: flex;
     align-items: flex-start;
     gap: 0.75rem;
@@ -72,32 +74,33 @@
     cursor: pointer;
     border: 1.5px solid transparent;
     transition:
-      background 0.1s,
-      border-color 0.1s;
+      background 0.15s ease,
+      border-color 0.15s ease;
     margin-bottom: 0.25rem;
   }
-  .file-item:hover {
+  :global(.file-item:hover) {
     background: #f5f7ff;
   }
-  /* Selected: blue accent border + tinted bg to make it clearly distinct from hover */
-  .file-item.selected {
-    background: #eff6ff;
+
+  /* Selected always wins over status classes */
+  :global(.file-item.selected) {
+    background: #eff6ff !important;
+    border-color: #2563eb !important;
+  }
+
+  :global(.file-item.queued) {
+    opacity: 0.55;
+  }
+  :global(.file-item.uploading) {
     border-color: #2563eb;
-  }
-  .file-item.queued {
-    opacity: 0.5;
-    pointer-events: none;
-  }
-  .file-item.uploading {
-    border-color: #2563eb;
     background: #eff6ff;
   }
-  .file-item.done {
-    opacity: 0.5;
+  :global(.file-item.done) {
+    opacity: 0.45;
     pointer-events: none;
   }
 
-  .file-icon {
+  :global(.file-icon) {
     width: 36px;
     height: 36px;
     background: #f5f5f5;
@@ -108,36 +111,48 @@
     flex-shrink: 0;
     color: #888;
   }
-  .file-info {
+
+  :global(.file-info) {
     min-width: 0;
     flex: 1;
   }
-  .file-name-row {
+
+  /* Name row: filename truncates, badge pins to far right */
+  :global(.file-name-row) {
     display: flex;
     align-items: center;
     gap: 0.4rem;
+    width: 100%;
   }
-  .file-name {
+  :global(.file-name) {
     font-size: 0.85rem;
     font-weight: 500;
     color: #1a1a1a;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    flex: 1;
     min-width: 0;
   }
-  .meta-badge {
+
+  /* META badge — right-side chip with blue border */
+  :global(.meta-badge) {
     flex-shrink: 0;
+    margin-left: auto;
     font-size: 0.6rem;
     font-weight: 700;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     background: #dbeafe;
     color: #1d4ed8;
-    padding: 0.1rem 0.35rem;
+    border: 1px solid #93c5fd;
+    padding: 0.15rem 0.4rem;
     border-radius: 4px;
     line-height: 1.4;
+    white-space: nowrap;
   }
-  .file-meta {
+
+  :global(.file-meta) {
     font-size: 0.75rem;
     color: #999;
     margin-top: 0.2rem;
