@@ -1,9 +1,25 @@
 ---
 // app/src/components/Header.astro
-// App header: logo, title, and watch-folder subtitle.
+// App header: back link, logo, title, and watch-folder subtitle.
 ---
 
 <header>
+  <a href="/setup" class="back-link" aria-label="Back to setup">
+    <svg
+      width="16"
+      height="16"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"
+      stroke-linejoin="round"
+    >
+      <polyline points="15 18 9 12 15 6"></polyline>
+    </svg>
+    Setup
+  </a>
+
   <svg
     class="logo-mark"
     width="28"
@@ -40,5 +56,24 @@
     font-size: 0.8rem;
     color: #888;
     margin-left: auto;
+  }
+  .back-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    color: #555;
+    text-decoration: none;
+    padding: 0.3rem 0.6rem;
+    border: 1px solid #e0e0e0;
+    border-radius: 6px;
+    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    flex-shrink: 0;
+  }
+  .back-link:hover {
+    background: #f5f5f5;
+    color: #1a1a1a;
+    border-color: #bbb;
   }
 </style>
