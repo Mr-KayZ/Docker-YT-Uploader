@@ -1,4 +1,4 @@
-# Docker-YT-Uploader: Ver. 0.9.1.3
+# Docker-YT-Uploader: Ver. 0.9.2
 
 Dockerized YouTube uploader, for when you want to upload to YouTube directly from your NAS!
 
@@ -338,31 +338,31 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 > [!NOTE]
 > Roadmap is subject to change as the project evolves, and major bugs are found which need to be addressed.
 
-| Version | Milestone                                                                                      | Status          |
-| ------- | ---------------------------------------------------------------------------------------------- | --------------- |
-| 0.1.0   | Project scaffold - Astro + Docker + basic routing                                              | [x] Complete    |
-| 0.2.0   | Auth system - OAuth setup page, credential upload, callback                                    | [x] Complete    |
-| 0.3.0   | File watcher + queue persistence                                                               | [x] Complete    |
-| 0.4.0   | Uploader core + scheduler                                                                      | [x] Complete    |
-| 0.5.0   | Web UI - metadata form, file list panel, enqueue flow                                          | [x] Complete    |
-| 0.6.0   | Cross-file integration fixes, route corrections, server init hooks                             | [x] Complete    |
-| 0.7.0   | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | [x] Complete    |
-| 0.8.0   | Sidecar `.meta.json` support - auto-fill metadata form from file                               | [x] Complete    |
-| 0.9.0   | Mount point configuration - setup UI for watched folder, auth, and data directories            | [x] Complete    |
-| 0.9.1   | Setup UX polish - proceed card, button alignment fixes                                         | [x] Complete    |
-| 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI             | [x] Complete    |
-| 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS        | [x] Complete    |
-| 0.9.1.3 | Major fix of Internal Server error bug induced by config.ts update                             | [x] Complete    |
-| 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)                | [ ] In Progress |
-| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | [ ] Planned     |
-| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | [ ] Planned     |
-| 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                          | [ ] Planned     |
-| 0.9.6   | Playlist support - pull channel playlists, assign at upload time                               | [ ] Planned     |
-| 0.9.7   | Docker log viewer - dedicated page for live container console output                           | [ ] Planned     |
-| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify - May require TLS cert               | [ ] Planned     |
-| 0.9.9   | Drag-and-drop video upload directly into the web UI                                            | [ ] Planned     |
-| 0.9.10  | Final bug fixing round and testing                                                             | [ ] Planned     |
-| 1.0.0   | **All key and planned features complete; end-to-end Docker tested**                            | [ ] **Target**  |
+| Version | Milestone                                                                                      | Status            |
+| ------- | ---------------------------------------------------------------------------------------------- | ----------------- |
+| 0.1.0   | Project scaffold - Astro + Docker + basic routing                                              | `[x]` Complete    |
+| 0.2.0   | Auth system - OAuth setup page, credential upload, callback                                    | `[x]` Complete    |
+| 0.3.0   | File watcher + queue persistence                                                               | `[x]` Complete    |
+| 0.4.0   | Uploader core + scheduler                                                                      | `[x]` Complete    |
+| 0.5.0   | Web UI - metadata form, file list panel, enqueue flow                                          | `[x]` Complete    |
+| 0.6.0   | Cross-file integration fixes, route corrections, server init hooks                             | `[x]` Complete    |
+| 0.7.0   | Refactor `index.astro` into components + independent panel scrolling + selected file highlight | `[x]` Complete    |
+| 0.8.0   | Sidecar `.meta.json` support - auto-fill metadata form from file                               | `[x]` Complete    |
+| 0.9.0   | Mount point configuration - setup UI for watched folder, auth, and data directories            | `[x]` Complete    |
+| 0.9.1   | Setup UX polish - proceed card, button alignment fixes                                         | `[x]` Complete    |
+| 0.9.1.1 | OAuth redirect fix - `PUBLIC_URL` env var + server address wizard step in setup UI             | `[x]` Complete    |
+| 0.9.1.2 | DuckDNS guidance - README, setup UI placeholder, config.ts validator aligned to DuckDNS        | `[x]` Complete    |
+| 0.9.1.3 | Major fix of Internal Server error bug induced by config.ts update                             | `[x]` Complete    |
+| 0.9.2   | Resumable uploads + live upload progress indicator + spinner (bottom-left card)                | `[x]` Complete    |
+| 0.9.3   | Upload info panel - progress bar, upload speed, quota usage                                    | `[ ]` In Progress |
+| 0.9.4   | In-browser notifications - toast on completion + bell popover with history                     | `[ ]` Planned     |
+| 0.9.5   | Queue management - reorder, pause, cancel pending uploads via popover                          | `[ ]` Planned     |
+| 0.9.6   | Playlist support - pull channel playlists, assign at upload time                               | `[ ]` Planned     |
+| 0.9.7   | Docker log viewer - dedicated page for live container console output                           | `[ ]` Planned     |
+| 0.9.8   | Additional notification channels - webhooks, ntfy, Gotify - May require TLS cert               | `[ ]` Planned     |
+| 0.9.9   | Drag-and-drop video upload directly into the web UI                                            | `[ ]` Planned     |
+| 0.9.10  | Final bug fixing round and testing                                                             | `[ ]` Planned     |
+| 1.0.0   | **All key and planned features complete; end-to-end Docker tested**                            | `[ ]` **Target**  |
 
 ### Fixes to Implement
 

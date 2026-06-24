@@ -45,6 +45,10 @@ export interface QueueEntry {
   errorMessage: string | null;
   uploadStartedAt: string | null;
   uploadFinishedAt: string | null;
+
+  // Resumable upload progress (null until upload starts)
+  bytesUploaded: number | null;
+  totalBytes: number | null;
 }
 
 // Directory init (call once at startup)

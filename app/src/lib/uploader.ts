@@ -1,12 +1,17 @@
 // app/src/lib/uploader.ts
 // Handles core upload logic: validating entries, uploading videos to YouTube, and
 // updating queue/history status accordingly.
+// Uses resumable upload sessions for large-file safety and live progress tracking.
 
 import { google } from "googleapis";
 import type { youtube_v3 } from "googleapis";
 import { createReadStream, statSync } from "node:fs";
-import path from "node:path";
 import { existsSync } from "node:fs";
+import path from "node:path";
+import https from "node:https";
+import http from "node:http";
+import { Transform } from "node:stream";
+import { pipeline } from "node:stream/promises";
 import { getAuthenticatedClient } from "./auth.ts";
 import { type QueueEntry, updateQueueEntry, moveToHistory } from "./queue.ts";
 
@@ -32,6 +37,10 @@ const MAX_TITLE_LEN = 100;
 const MAX_DESCRIPTION_LEN = 5000;
 const MAX_FILE_BYTES = 128 * 1024 * 1024 * 1024; // 128 GB
 
+// How often (in bytes) to write progress to queue.json.
+// 4 MB chunks = ~every few seconds on a fast LAN, not spammy on disk.
+const PROGRESS_WRITE_INTERVAL_BYTES = 4 * 1024 * 1024;
+
 // Returns an error string if the entry is invalid, null if valid.
 export function validateEntry(entry: QueueEntry): string | null {
   if (!entry.title.trim()) return "Title is required.";
@@ -52,7 +61,125 @@ export function validateEntry(entry: QueueEntry): string | null {
   return null;
 }
 
-// Uploads a single queue entry to YouTube, updating its status in the queue/history accordingly.
+// Initiates a resumable upload session with YouTube and returns the session URI.
+async function initiateResumableSession(
+  auth: any,
+  resource: youtube_v3.Schema$Video,
+  fileSize: number,
+): Promise<string> {
+  // Get a fresh access token from the auth client
+  const tokenResponse = await auth.getAccessToken();
+  const accessToken = tokenResponse.token ?? tokenResponse.res?.data?.access_token;
+  if (!accessToken) throw new Error("Failed to obtain access token for resumable upload.");
+
+  const metadata = JSON.stringify({
+    snippet: resource.snippet,
+    status: resource.status,
+  });
+
+  const response = await fetch(
+    "https://www.googleapis.com/upload/youtube/v3/videos?uploadType=resumable&part=snippet,status",
+    {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json; charset=UTF-8",
+        "X-Upload-Content-Type": "video/*",
+        "X-Upload-Content-Length": String(fileSize),
+      },
+      body: metadata,
+    },
+  );
+
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`Resumable session initiation failed (${response.status}): ${errText}`);
+  }
+
+  const sessionUri = response.headers.get("location");
+  if (!sessionUri) throw new Error("YouTube did not return a resumable session URI.");
+
+  return sessionUri;
+}
+
+// Streams the video file to the resumable session URI, writing progress periodically.
+async function streamFileToSession(
+  sessionUri: string,
+  filePath: string,
+  fileSize: number,
+  onProgress: (bytesUploaded: number) => Promise<void>,
+): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const url = new URL(sessionUri);
+    const transport = url.protocol === "https:" ? https : http;
+
+    const req = transport.request(
+      {
+        hostname: url.hostname,
+        path: url.pathname + url.search,
+        method: "PUT",
+        headers: {
+          "Content-Type": "video/*",
+          "Content-Length": String(fileSize),
+        },
+      },
+      (res) => {
+        let body = "";
+        res.on("data", (chunk: Buffer) => { body += chunk.toString(); });
+        res.on("end", () => {
+          if (res.statusCode === 200 || res.statusCode === 201) {
+            try {
+              const parsed = JSON.parse(body);
+              if (!parsed.id) {
+                reject(new Error("YouTube did not return a video ID."));
+              } else {
+                resolve(parsed.id as string);
+              }
+            } catch {
+              reject(new Error(`Failed to parse YouTube response: ${body}`));
+            }
+          } else {
+            reject(new Error(`Upload PUT failed (${res.statusCode}): ${body}`));
+          }
+        });
+      },
+    );
+
+    req.on("error", reject);
+
+    // Progress-tracking Transform stream
+    let bytesSent = 0;
+    let bytesAtLastWrite = 0;
+
+    const tracker = new Transform({
+      transform(chunk, _encoding, callback) {
+        bytesSent += chunk.length;
+        this.push(chunk);
+
+        // Write progress to queue.json at intervals to avoid hammering disk
+        if (bytesSent - bytesAtLastWrite >= PROGRESS_WRITE_INTERVAL_BYTES) {
+          bytesAtLastWrite = bytesSent;
+          onProgress(bytesSent).catch(() => {});
+        }
+
+        callback();
+      },
+      flush(callback) {
+        // Final progress write when stream ends
+        onProgress(bytesSent).catch(() => {});
+        callback();
+      },
+    });
+
+    const fileStream = createReadStream(filePath);
+    fileStream.pipe(tracker).pipe(req);
+
+    fileStream.on("error", reject);
+    tracker.on("error", reject);
+  });
+}
+
+// Uploads a single queue entry to YouTube using a resumable session.
 export async function uploadEntry(entry: QueueEntry): Promise<void> {
   const validationError = validateEntry(entry);
   if (validationError) {
@@ -65,9 +192,13 @@ export async function uploadEntry(entry: QueueEntry): Promise<void> {
     return;
   }
 
+  const fileSize = statSync(entry.filePath).size;
+
   await updateQueueEntry(entry.id, {
     status: "uploading",
     uploadStartedAt: new Date().toISOString(),
+    bytesUploaded: 0,
+    totalBytes: fileSize,
   });
 
   // Core upload logic
@@ -93,16 +224,20 @@ export async function uploadEntry(entry: QueueEntry): Promise<void> {
       },
     };
 
-    const uploadRes = await youtube.videos.insert({
-      part: ["snippet", "status"],
-      requestBody: resource,
-      media: { body: createReadStream(entry.filePath) },
-    });
+    // Step 1: Initiate resumable session
+    console.log(`[uploader] Initiating resumable session for ${entry.fileName} (${(fileSize / 1024 / 1024).toFixed(1)} MB)`);
+    const sessionUri = await initiateResumableSession(auth, resource, fileSize);
 
-    // The media upload overload types .data as Readable; cast back to Schema$Video
-    const videoId = (uploadRes.data as youtube_v3.Schema$Video).id;
-    if (!videoId)
-      throw new Error("YouTube did not return a video ID after upload.");
+    // Step 2: Stream file with progress tracking
+    console.log(`[uploader] Streaming to resumable session: ${entry.fileName}`);
+    const videoId = await streamFileToSession(
+      sessionUri,
+      entry.filePath,
+      fileSize,
+      async (bytesUploaded) => {
+        await updateQueueEntry(entry.id, { bytesUploaded });
+      },
+    );
 
     console.log(`[uploader] Upload complete: https://youtu.be/${videoId}`);
 
@@ -150,6 +285,8 @@ export async function uploadEntry(entry: QueueEntry): Promise<void> {
       ...entry,
       status: "done",
       youtubeVideoId: videoId,
+      bytesUploaded: fileSize,
+      totalBytes: fileSize,
       errorMessage: null,
       uploadFinishedAt: new Date().toISOString(),
     });
