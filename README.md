@@ -368,13 +368,12 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
-- **Highlighting of selected video in Uploader** - Highlight selected video by darkening it slightly and having a border around it.
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
 - **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
-- **Back button on Uploader** - Add a back/settings link in the top-left header of the uploader (beside the logo/title) that returns the user to `/setup`
 - Allow **reset configuration** or **reset application** to delete all configs in `/data` and `/auth`. `/videos` must not be touched however.
   - Conversely, also add methods to select the previous setup pages, like re-uploading auth tokens, changing website/DNS, etc.
 - **Tooltips on icon buttons** - Header icon buttons (bell, logs, etc.) should show a descriptive tooltip on hover
 - **Upload complete toast notification** - On successful upload, show a green toast (darker green border, dismiss button) reading "Upload complete! \<Video Title\>: \<YouTube link\>"; the same notification should appear in the bell popover history
 - **Have a settings page** - Allows changing of ports, updating of app (if possible), etc. - Look into serving TLS certification as well from the container
 - **Introduce hardening** - Look into making it more secure for multi-user or production-ready environments
+- **Allow user to select done videos** - Once videos are uploaded, allow the user to select the done videos, and have the youtube link attached at the top of the page of the selected video
