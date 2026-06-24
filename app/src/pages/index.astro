@@ -20,256 +20,6 @@ startScheduler();
 
   <div class="workspace">
     <FilePanel />
-    <UploadForm />
-  </div>
-
-  <!-- Bottom-left upload progress card (hidden when idle) -->
-  <div class="upload-card" id="uploadCard" aria-live="polite">
-    <div class="upload-card-header">
-      <div class="upload-spinner" aria-hidden="true"></div>
-      <span class="upload-card-title" id="uploadCardTitle">Uploading…</span>
-    </div>
-    <div class="upload-card-filename" id="uploadCardFilename"></div>
-    <div class="upload-progress-track">
-      <div class="upload-progress-bar" id="uploadProgressBar"></div>
-    </div>
-    <div class="upload-card-meta">
-      <span id="uploadCardPercent">0%</span>
-      <span id="uploadCardSpeed"></span>
-    </div>
-  </div>
-</AppLayout>
-
-<style>
-  .upload-card {
-    position: fixed;
-    bottom: 1.25rem;
-    left: 1.25rem;
-    width: 280px;
-    background: white;
-    border: 1px solid #e5e5e5;
-    border-radius: 10px;
-    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-    padding: 0.875rem 1rem;
-    display: none; /* shown by JS when active */
-    flex-direction: column;
-    gap: 0.5rem;
-    z-index: 100;
-  }
-  .upload-card.visible {
-    display: flex;
-  }
-  .upload-card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-  .upload-card-title {
-    font-size: 0.82rem;
-    font-weight: 600;
-    color: #1a1a1a;
-  }
-  .upload-card-filename {
-    font-size: 0.78rem;
-    color: #555;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .upload-progress-track {
-    width: 100%;
-    height: 5px;
-    background: #f0f0f0;
-    border-radius: 999px;
-    overflow: hidden;
-  }
-  .upload-progress-bar {
-    height: 100%;
-    background: #2563eb;
-    border-radius: 999px;
-    width: 0%;
-    transition: width 0.6s ease;
-  }
-  .upload-card-meta {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.75rem;
-    color: #888;
-  }
-
-  /* Spinner */
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
-  .upload-spinner {
-    width: 14px;
-    height: 14px;
-    border: 2px solid #e5e5e5;
-    border-top-color: #2563eb;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    flex-shrink: 0;
-  }
-</style>
-
-<script>
-  // File list polling + selection bridge
-  //-----------------------------------------------------------------------------------------------
-
-  const fileList = document.getElementById("fileList")!;
-  const fileCount = document.getElementById("fileCount")!;
-
-  let selectedFile: string | null = null;
-
-  async function refreshFileList() {
-    try {
-      const [filesRes, queueRes] = await Promise.all([
-        fetch("/api/files"),
-        fetch("/api/enqueue"),
-      ]);
-      const { files } = (await filesRes.json()) as {
-        files: {
-          name: string;
-          path: string;
-          addedAt: string;
-          hasMeta: boolean;
-        }[];
-      };
-      const { queue, history } = (await queueRes.json()) as {
-        queue: { fileName: string; status: string }[];
-        history: { fileName: string; status: string }[];
-      };
-
-      const queueMap = new Map([
-        ...queue.map((e) => [e.fileName, e.status] as [string, string]),
-        ...history.map((e) => [e.fileName, e.status] as [string, string]),
-      ]);
-
-      fileCount.textContent = String(files.length);
-
-      if (files.length === 0) {
-        fileList.innerHTML = `<div class="file-empty"><p>No video files detected.<br/>Drop a file into <code>/videos</code>.</p></div>`;
-        return;
-      }
-
-      fileList.innerHTML = files
-        .map((f) => {
-          const status = queueMap.get(f.name) ?? "";
-          const statusClass = status ? ` ${status}` : "";
-          const badge = status
-            ? `<span class="badge badge-${status}">${status}</span>`
-            : "";
-          const added = new Date(f.addedAt).toLocaleString();
-          const isSelected = selectedFile === f.name ? " selected" : "";
-
-          return `
-          <div class="file-item${statusClass}${isSelected}"
-            data-name="${f.name}" data-path="${f.path}"
-            data-has-meta="${f.hasMeta ? "1" : "0"}">
-          <div class="file-icon">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor"
-              stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-              <polygon points="23 7 16 12 23 17 23 7"/>
-              <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-            </svg>
-          </div>
-          <div class="file-info">
-            <div class="file-name-row">
-              <span class="file-name">${f.name}</span>
-              ${f.hasMeta ? '<span class="meta-badge" title=".meta.json found - form will be pre-filled">META</span>' : ""}
-            </div>
-            <div class="file-meta">${added}</div>
-          </div>
-          ${badge}
-          </div>`;
-        })
-        .join("");
-
-      // Attach click handlers
-      fileList.querySelectorAll<HTMLElement>(".file-item").forEach((el) => {
-        el.addEventListener("click", () => {
-          const name = el.getAttribute("data-name")!;
-          const hasMeta = el.dataset.hasMeta === "1";
-          selectedFile = name;
-          window.dispatchEvent(
-            new CustomEvent("file-selected", { detail: { name, hasMeta } }),
-          );
-          refreshFileList();
-        });
-      });
-    } catch (err) {
-      console.error("[ui] refreshFileList error:", err);
-    }
-  }
-
-  // UploadForm signals us to refresh after a successful enqueue
-  window.addEventListener("refresh-files", () => refreshFileList());
-
-  // Boot
-  refreshFileList();
-  setInterval(refreshFileList, 5000);
-
-  // Progress card polling
-  //-----------------------------------------------------------------------------------------------
-
-  const uploadCard = document.getElementById("uploadCard")!;
-  const uploadCardFilename = document.getElementById("uploadCardFilename")!;
-  const uploadProgressBar = document.getElementById("uploadProgressBar")!;
-  const uploadCardPercent = document.getElementById("uploadCardPercent")!;
-  const uploadCardSpeed = document.getElementById("uploadCardSpeed")!;
-
-  function formatBytes(bytes: number): string {
-    if (bytes < 1024) return `${bytes} B/s`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB/s`;
-    return `${(bytes / 1024 / 1024).toFixed(1)} MB/s`;
-  }
-
-  async function refreshProgress() {
-    try {
-      const res = await fetch("/api/progress");
-      const data = (await res.json()) as {
-        active: boolean;
-        fileName?: string;
-        percent?: number;
-        bytesUploaded?: number;
-        totalBytes?: number;
-        speedBps?: number | null;
-      };
-
-      if (!data.active) {
-        uploadCard.classList.remove("visible");
-        return;
-      }
-
-      uploadCard.classList.add("visible");
-      uploadCardFilename.textContent = data.fileName ?? "";
-      const pct = data.percent ?? 0;
-      uploadProgressBar.style.width = `${pct}%`;
-      uploadCardPercent.textContent = `${pct}%`;
-      uploadCardSpeed.textContent = data.speedBps
-        ? formatBytes(data.speedBps)
-        : "";
-    } catch {
-      // Silent - progress card just stays in its last state
-    }
-  }
-
-  refreshProgress();
-  setInterval(refreshProgress, 1500);
-</script>
---- // app/src/pages/index.astro import AppLayout from "../layouts/AppLayout.astro";
-import Header from "../components/Header.astro"; import FilePanel from "../components/FilePanel.astro";
-import UploadForm from "../components/UploadForm.astro"; import {initWatcher} from
-"../lib/watcher.ts"; import {startScheduler} from "../lib/scheduler.ts"; initWatcher();
-startScheduler(); ---
-
-<AppLayout title="Docker-YT-Uploader">
-  <Header />
-
-  <div class="workspace">
-    <FilePanel />
 
     <!-- Right pane: either UploadForm or DonePanel depending on selection -->
     <div class="panel-right-wrapper" id="panelRightWrapper">
@@ -360,7 +110,7 @@ startScheduler(); ---
 </AppLayout>
 
 <style>
-  /* Right pane wrapper — fills the remaining space, clips its children */
+  /* Right pane wrapper - fills the remaining space, clips its children */
   .panel-right-wrapper {
     flex: 1;
     min-width: 0;
@@ -594,7 +344,8 @@ startScheduler(); ---
 </style>
 
 <script>
-  // ─── File list polling + selection bridge ───────────────────────────────────
+  // File list polling + selection bridge
+  //-----------------------------------------------------------------------------------------------
 
   const fileList = document.getElementById("fileList")!;
   const fileCount = document.getElementById("fileCount")!;
@@ -616,7 +367,8 @@ startScheduler(); ---
     donePanel.style.display = "flex";
   }
 
-  // ─── Done panel logic ───────────────────────────────────────────────────────
+  // Done panel logic
+  //----------------------------------------------------------------------------------------------- 
 
   const ytLinkBtn = document.getElementById("ytLinkBtn") as HTMLAnchorElement;
   const doneLoading = document.getElementById("doneLoading")!;
@@ -693,11 +445,11 @@ startScheduler(); ---
         unlisted: "Unlisted",
       };
       donePrivacy.textContent =
-        privacyLabel[data.privacyStatus ?? ""] ?? data.privacyStatus ?? "—";
+        privacyLabel[data.privacyStatus ?? ""] ?? data.privacyStatus ?? "-";
 
       donePublished.textContent = data.publishedAt
         ? new Date(data.publishedAt).toLocaleString()
-        : "—";
+        : "-";
 
       doneLoading.style.display = "none";
       doneMeta.style.display = "block";
@@ -716,7 +468,8 @@ startScheduler(); ---
     loadDoneMeta(videoId);
   });
 
-  // ─── File list polling ──────────────────────────────────────────────────────
+  // File list polling
+  //-----------------------------------------------------------------------------------------------
 
   async function refreshFileList() {
     try {
@@ -796,7 +549,7 @@ startScheduler(); ---
           <div class="file-info">
             <div class="file-name-row">
               <span class="file-name">${f.name}</span>
-              ${f.hasMeta ? '<span class="meta-badge" title=".meta.json found — form will be pre-filled">META</span>' : ""}
+              ${f.hasMeta ? '<span class="meta-badge" title=".meta.json found - form will be pre-filled">META</span>' : ""}
             </div>
             <div class="file-meta">${added}</div>
           </div>
@@ -838,7 +591,8 @@ startScheduler(); ---
   refreshFileList();
   setInterval(refreshFileList, 5000);
 
-  // ─── Progress card polling ──────────────────────────────────────────────────
+  // Progress card polling
+  //-----------------------------------------------------------------------------------------------
 
   const uploadCard = document.getElementById("uploadCard")!;
   const uploadCardFilename = document.getElementById("uploadCardFilename")!;
@@ -867,7 +621,6 @@ startScheduler(); ---
       // Always update quota display regardless of active state
       if (data.quota) {
         const { used, limit, remaining } = data.quota;
-        const pct = Math.round((used / limit) * 100);
         uploadCardQuota.textContent = `Quota: ${used.toLocaleString()} / ${limit.toLocaleString()} units used today (est.)`;
         uploadCardQuota.classList.toggle("warn", remaining < 1600);
       }
