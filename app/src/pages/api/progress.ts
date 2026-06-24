@@ -1,8 +1,9 @@
 // app/src/pages/api/progress.ts
-// GET /api/progress - returns the currently uploading entry's progress, or null if idle.
+// GET /api/progress - returns the currently uploading entry's progress + daily quota status.
 
 import type { APIRoute } from "astro";
 import { getQueue } from "../../lib/queue.ts";
+import { getQuotaStatus } from "../../lib/quota.ts";
 
 const json = (body: object, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -13,9 +14,10 @@ const json = (body: object, status = 200) =>
 export const GET: APIRoute = async () => {
   const queue = await getQueue();
   const uploading = queue.find((e) => e.status === "uploading") ?? null;
+  const quota = getQuotaStatus();
 
   if (!uploading) {
-    return json({ active: false });
+    return json({ active: false, quota });
   }
 
   const { fileName, bytesUploaded, totalBytes, uploadStartedAt } = uploading;
@@ -23,7 +25,8 @@ export const GET: APIRoute = async () => {
   // Compute upload speed (bytes/sec) from elapsed time
   let speedBps: number | null = null;
   if (uploadStartedAt && bytesUploaded != null && bytesUploaded > 0) {
-    const elapsedSec = (Date.now() - new Date(uploadStartedAt).getTime()) / 1000;
+    const elapsedSec =
+      (Date.now() - new Date(uploadStartedAt).getTime()) / 1000;
     if (elapsedSec > 0) speedBps = bytesUploaded / elapsedSec;
   }
 
@@ -37,5 +40,6 @@ export const GET: APIRoute = async () => {
         ? Math.min(100, Math.round(((bytesUploaded ?? 0) / totalBytes) * 100))
         : 0,
     speedBps,
+    quota,
   });
 };

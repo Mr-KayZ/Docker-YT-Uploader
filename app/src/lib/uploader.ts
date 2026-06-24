@@ -14,6 +14,7 @@ import { Transform } from "node:stream";
 import { pipeline } from "node:stream/promises";
 import { getAuthenticatedClient } from "./auth.ts";
 import { type QueueEntry, updateQueueEntry, moveToHistory } from "./queue.ts";
+import { recordUpload } from "./quota.ts";
 
 export const YT_CATEGORIES: Record<string, string> = {
   "1": "Film & Animation",
@@ -69,8 +70,10 @@ async function initiateResumableSession(
 ): Promise<string> {
   // Get a fresh access token from the auth client
   const tokenResponse = await auth.getAccessToken();
-  const accessToken = tokenResponse.token ?? tokenResponse.res?.data?.access_token;
-  if (!accessToken) throw new Error("Failed to obtain access token for resumable upload.");
+  const accessToken =
+    tokenResponse.token ?? tokenResponse.res?.data?.access_token;
+  if (!accessToken)
+    throw new Error("Failed to obtain access token for resumable upload.");
 
   const metadata = JSON.stringify({
     snippet: resource.snippet,
@@ -93,11 +96,14 @@ async function initiateResumableSession(
 
   if (!response.ok) {
     const errText = await response.text();
-    throw new Error(`Resumable session initiation failed (${response.status}): ${errText}`);
+    throw new Error(
+      `Resumable session initiation failed (${response.status}): ${errText}`,
+    );
   }
 
   const sessionUri = response.headers.get("location");
-  if (!sessionUri) throw new Error("YouTube did not return a resumable session URI.");
+  if (!sessionUri)
+    throw new Error("YouTube did not return a resumable session URI.");
 
   return sessionUri;
 }
@@ -125,7 +131,9 @@ async function streamFileToSession(
       },
       (res) => {
         let body = "";
-        res.on("data", (chunk: Buffer) => { body += chunk.toString(); });
+        res.on("data", (chunk: Buffer) => {
+          body += chunk.toString();
+        });
         res.on("end", () => {
           if (res.statusCode === 200 || res.statusCode === 201) {
             try {
@@ -225,7 +233,9 @@ export async function uploadEntry(entry: QueueEntry): Promise<void> {
     };
 
     // Step 1: Initiate resumable session
-    console.log(`[uploader] Initiating resumable session for ${entry.fileName} (${(fileSize / 1024 / 1024).toFixed(1)} MB)`);
+    console.log(
+      `[uploader] Initiating resumable session for ${entry.fileName} (${(fileSize / 1024 / 1024).toFixed(1)} MB)`,
+    );
     const sessionUri = await initiateResumableSession(auth, resource, fileSize);
 
     // Step 2: Stream file with progress tracking
@@ -290,6 +300,9 @@ export async function uploadEntry(entry: QueueEntry): Promise<void> {
       errorMessage: null,
       uploadFinishedAt: new Date().toISOString(),
     });
+
+    // Record quota usage (1,600 units per successful upload)
+    recordUpload();
   } catch (err: any) {
     console.error(`[uploader] Upload failed for ${entry.fileName}:`, err);
     await moveToHistory({
