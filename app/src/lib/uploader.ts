@@ -15,6 +15,7 @@ import { pipeline } from "node:stream/promises";
 import { getAuthenticatedClient } from "./auth.ts";
 import { type QueueEntry, updateQueueEntry, moveToHistory } from "./queue.ts";
 import { recordUpload } from "./quota.ts";
+import { addNotification } from "./notifications.ts";
 
 export const YT_CATEGORIES: Record<string, string> = {
   "1": "Film & Animation",
@@ -299,6 +300,17 @@ export async function uploadEntry(entry: QueueEntry): Promise<void> {
       totalBytes: fileSize,
       errorMessage: null,
       uploadFinishedAt: new Date().toISOString(),
+    });
+
+    const youtubeUrl = `https://www.youtube.com/watch?v=${videoId}`;
+
+    await addNotification({
+      type: "upload_complete",
+      level: "success",
+      title: "Upload complete!",
+      message: `${entry.title.trim()} is now live on YouTube.`,
+      videoTitle: entry.title.trim() || entry.fileName,
+      youtubeUrl,
     });
 
     // Record quota usage (1,600 units per successful upload)

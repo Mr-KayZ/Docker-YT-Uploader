@@ -369,7 +369,6 @@ Want to contribute? Remember to create an issue and read the [wiki](https://gith
 These are outstanding structural and UX improvements that don't map to a specific feature, but need to be resolved before the project is considered stable:
 
 - **Refactor `setup.astro` into components** - The page is large; break it into Astro components and a layout for easier maintenance
-- **`.meta.json` tags on video cards** - If a video has a sidecar meta file, show a compact tag badge on the video card in the file list instead of embedding it as plain text
 - Allow **reset configuration** or **reset application** to delete all configs in `/data` and `/auth`. `/videos` must not be touched however.
   - Conversely, also add methods to select the previous setup pages, like re-uploading auth tokens, changing website/DNS, etc.
 - **Tooltips on icon buttons** - Header icon buttons (bell, logs, etc.) should show a descriptive tooltip on hover
@@ -377,3 +376,6 @@ These are outstanding structural and UX improvements that don't map to a specifi
 - **Have a settings page** - Allows changing of ports, updating of app (if possible), etc. - Look into serving TLS certification as well from the container
 - **Introduce hardening** - Look into making it more secure for multi-user or production-ready environments
 - **Auto-refresh uploader page** - Once uploaded, the configuration page should refresh to Done page.
+- **Failed badge bug** - The failed badge continously displays even after failure to upload and requeued. The failed badge should disappear and replaced with a queue badge instead.
+- **Queued videos** - When queued, the video details section disappear. I probably should make the page still stay present and have a popover stating (Processing upload) with the background for the settings greyed out.
+- **Cancelled tag** - When implementing queue management, have a cancelled tag as well.

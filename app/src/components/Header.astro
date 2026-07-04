@@ -4,7 +4,11 @@
 ---
 
 <header>
-  <a href="/setup" class="back-link" aria-label="Back to setup">
+  <a
+    href="/setup"
+    class="back-link header-control tooltip-trigger"
+    aria-label="Back to setup"
+  >
     <svg
       width="16"
       height="16"
@@ -18,6 +22,7 @@
       <polyline points="15 18 9 12 15 6"></polyline>
     </svg>
     Setup
+    <span class="tooltip-text" role="tooltip">Setup</span>
   </a>
 
   <svg
@@ -32,6 +37,50 @@
     <polygon points="12,10 24,16 12,22" fill="white"></polygon>
   </svg>
   <h1>Docker-YT-Uploader</h1>
+
+  <div class="header-actions">
+    <div class="header-icon-group">
+      <button
+        type="button"
+        id="notifications-button"
+        class="icon-button header-control tooltip-trigger"
+        aria-label="Notifications"
+        aria-controls="notifications-popover"
+        aria-expanded="false"
+        aria-haspopup="dialog"
+      >
+        <span aria-hidden="true">🔔</span>
+        <span id="notifications-badge" class="icon-badge" hidden>0</span>
+        <span class="tooltip-text" role="tooltip">Notifications</span>
+      </button>
+
+      <div
+        id="notifications-popover"
+        class="notifications-popover"
+        role="dialog"
+        aria-label="Notification history"
+        hidden
+      >
+        <div class="notifications-popover__header">
+          <strong>Notifications</strong>
+        </div>
+
+        <div id="notifications-list" class="notifications-popover__list">
+          <p class="notifications-empty">No notifications yet.</p>
+        </div>
+      </div>
+    </div>
+
+    <button
+      type="button"
+      class="icon-button header-control tooltip-trigger"
+      aria-label="Logs"
+    >
+      <span aria-hidden="true">📜</span>
+      <span class="tooltip-text" role="tooltip">Logs</span>
+    </button>
+  </div>
+
   <span class="subtitle">Watching <code>/videos</code></span>
 </header>
 
@@ -44,36 +93,227 @@
     align-items: center;
     gap: 0.75rem;
   }
+
   header .logo-mark {
     flex-shrink: 0;
   }
+
   header h1 {
     font-size: 1rem;
     font-weight: 600;
     color: #1a1a1a;
   }
+
   header .subtitle {
     font-size: 0.8rem;
     color: #888;
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
     margin-left: auto;
   }
-  .back-link {
+
+  .header-control {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.25rem;
-    font-size: 0.8rem;
-    font-weight: 500;
-    color: #555;
-    text-decoration: none;
-    padding: 0.3rem 0.6rem;
+    justify-content: center;
+    height: 2rem;
+    min-width: 2rem;
+    padding: 0 0.65rem;
     border: 1px solid #e0e0e0;
     border-radius: 6px;
-    transition: background 0.15s, color 0.15s, border-color 0.15s;
+    background: white;
+    color: #555;
+    transition:
+      background 0.15s,
+      color 0.15s,
+      border-color 0.15s,
+      box-shadow 0.15s;
     flex-shrink: 0;
   }
-  .back-link:hover {
+
+  .header-control:hover {
     background: #f5f5f5;
     color: #1a1a1a;
     border-color: #bbb;
   }
+
+  .header-control:focus-visible {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+  }
+
+  .back-link {
+    gap: 0.25rem;
+    font-size: 0.8rem;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  .header-icon-group {
+    position: relative;
+  }
+
+  .icon-button {
+    font-size: 1rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  .icon-badge {
+    position: absolute;
+    top: -0.3rem;
+    right: -0.35rem;
+    min-width: 1.15rem;
+    height: 1.15rem;
+    padding: 0 0.3rem;
+    border-radius: 999px;
+    background: #22c55e;
+    color: #08110b;
+    font-size: 0.72rem;
+    font-weight: 700;
+    line-height: 1.15rem;
+    text-align: center;
+  }
+
+  .tooltip-text {
+    position: absolute;
+    top: calc(100% + 0.45rem);
+    left: 50%;
+    transform: translateX(-50%);
+    opacity: 0;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 80;
+    padding: 0.32rem 0.55rem;
+    border-radius: 0.45rem;
+    background: rgba(15, 23, 42, 0.96);
+    color: #f8fafc;
+    font-size: 0.8rem;
+    line-height: 1;
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.22);
+    transition: opacity 120ms ease;
+  }
+
+  .tooltip-trigger:hover .tooltip-text,
+  .tooltip-trigger:focus-visible .tooltip-text {
+    opacity: 1;
+  }
+
+  .notifications-popover {
+    position: absolute;
+    top: calc(100% + 0.75rem);
+    right: 0;
+    width: min(24rem, calc(100vw - 2rem));
+    max-height: 24rem;
+    overflow: auto;
+    z-index: 90;
+    border-radius: 0.9rem;
+    background: #0f172a;
+    border: 1px solid rgba(148, 163, 184, 0.22);
+    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.3);
+  }
+
+  .notifications-popover__header {
+    padding: 0.9rem 1rem 0.75rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+    color: #f8fafc;
+  }
+
+  .notifications-popover__list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .notification-item {
+    padding: 0.9rem 1rem;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  }
+
+  .notification-item:last-child {
+    border-bottom: none;
+  }
+
+  .notification-item__title {
+    color: #4ade80;
+    font-weight: 700;
+    margin-bottom: 0.2rem;
+  }
+
+  .notification-item__meta {
+    color: #dbe4f0;
+    font-size: 0.92rem;
+  }
+
+  .notification-item__time {
+    color: #94a3b8;
+    font-size: 0.8rem;
+    margin-top: 0.35rem;
+  }
+
+  .notification-item a {
+    color: #93c5fd;
+    text-decoration: none;
+  }
+
+  .notification-item a:hover,
+  .notification-item a:focus-visible {
+    text-decoration: underline;
+  }
+
+  .notifications-empty {
+    padding: 1rem;
+    color: #94a3b8;
+  }
 </style>
+
+<script>
+  const notificationsButton = document.getElementById("notifications-button");
+  const notificationsPopover = document.getElementById("notifications-popover");
+
+  if (notificationsButton && notificationsPopover) {
+    const closePopover = () => {
+      notificationsButton.setAttribute("aria-expanded", "false");
+      notificationsPopover.hidden = true;
+    };
+
+    const openPopover = () => {
+      notificationsButton.setAttribute("aria-expanded", "true");
+      notificationsPopover.hidden = false;
+    };
+
+    notificationsButton.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const isOpen =
+        notificationsButton.getAttribute("aria-expanded") === "true";
+
+      if (isOpen) closePopover();
+      else openPopover();
+    });
+
+    document.addEventListener("click", (event: MouseEvent) => {
+      const target = event.target;
+
+      if (!(target instanceof Node)) return;
+
+      if (
+        !notificationsPopover.hidden &&
+        !notificationsPopover.contains(target) &&
+        !notificationsButton.contains(target)
+      ) {
+        closePopover();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") {
+        closePopover();
+      }
+    });
+  }
+</script>

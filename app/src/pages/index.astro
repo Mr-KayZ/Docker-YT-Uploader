@@ -107,6 +107,15 @@ startScheduler();
     </div>
     <div class="upload-card-quota" id="uploadCardQuota"></div>
   </div>
+
+  <!-- Bottom-right toast region -->
+  <div
+    id="toast-region"
+    class="toast-region"
+    aria-live="polite"
+    aria-atomic="true"
+  >
+  </div>
 </AppLayout>
 
 <style>
@@ -326,12 +335,6 @@ startScheduler();
   .upload-card-quota.warn {
     color: #dc2626;
   }
-
-  @keyframes spin {
-    to {
-      transform: rotate(360deg);
-    }
-  }
   .upload-spinner {
     width: 14px;
     height: 14px;
@@ -340,6 +343,58 @@ startScheduler();
     border-radius: 50%;
     animation: spin 0.8s linear infinite;
     flex-shrink: 0;
+  }
+
+  /* Toast region */
+  .toast-region {
+    position: fixed;
+    right: 1rem;
+    bottom: 1rem;
+    z-index: 120;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    width: min(26rem, calc(100vw - 2rem));
+    pointer-events: none;
+  }
+  .toast {
+    pointer-events: auto;
+    border-radius: 0.9rem;
+    border: 1px solid #22c55e;
+    background: #102416;
+    color: #ecfdf3;
+    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+    padding: 0.95rem 1rem;
+  }
+  .toast__title {
+    font-weight: 800;
+    color: #86efac;
+    margin-bottom: 0.3rem;
+  }
+  .toast__body {
+    color: #dcfce7;
+    font-size: 0.95rem;
+    line-height: 1.45;
+  }
+  .toast__body a {
+    color: #93c5fd;
+  }
+  .toast__actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 0.7rem;
+  }
+  .toast__dismiss {
+    border: 1px solid rgba(134, 239, 172, 0.25);
+    background: transparent;
+    color: #ecfdf3;
+    border-radius: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    cursor: pointer;
+  }
+  .toast__dismiss:hover,
+  .toast__dismiss:focus-visible {
+    background: rgba(255, 255, 255, 0.06);
   }
 </style>
 
@@ -368,7 +423,7 @@ startScheduler();
   }
 
   // Done panel logic
-  //----------------------------------------------------------------------------------------------- 
+  //-----------------------------------------------------------------------------------------------
 
   const ytLinkBtn = document.getElementById("ytLinkBtn") as HTMLAnchorElement;
   const doneLoading = document.getElementById("doneLoading")!;
@@ -645,4 +700,158 @@ startScheduler();
 
   refreshProgress();
   setInterval(refreshProgress, 1500);
+
+  // Notifications: toast + bell popover sync
+  //-----------------------------------------------------------------------------------------------
+
+  const toastRegion = document.getElementById("toast-region");
+  const notificationsList = document.getElementById("notifications-list");
+  const notificationsBadge = document.getElementById("notifications-badge");
+  const notificationsButton = document.getElementById("notifications-button");
+
+  const seenNotificationIds = new Set<string>();
+  let hasInitialNotificationFetchCompleted = false;
+  let sessionUnreadCount = 0;
+
+  function escapeHtml(value: unknown): string {
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#39;");
+  }
+
+  function formatNotificationTime(isoString: string): string {
+    try {
+      return new Date(isoString).toLocaleString();
+    } catch {
+      return isoString;
+    }
+  }
+
+  function renderNotificationBadge(count: number) {
+    if (!notificationsBadge) return;
+
+    if (!count) {
+      notificationsBadge.hidden = true;
+      notificationsBadge.textContent = "0";
+      return;
+    }
+
+    notificationsBadge.hidden = false;
+    notificationsBadge.textContent = String(Math.min(count, 99));
+  }
+
+  function renderNotifications(notifications: any[]) {
+    if (!notificationsList) return;
+
+    if (!notifications.length) {
+      notificationsList.innerHTML =
+        '<p class="notifications-empty">No notifications yet.</p>';
+      return;
+    }
+
+    notificationsList.innerHTML = notifications
+      .map((notification) => {
+        const title = escapeHtml(notification.title);
+        const videoTitle = escapeHtml(notification.videoTitle);
+        const youtubeUrl = escapeHtml(notification.youtubeUrl);
+        const createdAt = escapeHtml(
+          formatNotificationTime(notification.createdAt),
+        );
+
+        return `
+          <article class="notification-item">
+            <div class="notification-item__title">${title}</div>
+            <div class="notification-item__meta">${videoTitle}</div>
+            <div class="notification-item__meta">
+              <a href="${youtubeUrl}" target="_blank" rel="noopener noreferrer">Open on YouTube</a>
+            </div>
+            <div class="notification-item__time">${createdAt}</div>
+          </article>
+        `;
+      })
+      .join("");
+  }
+
+  function showToast(notification: any) {
+    if (!toastRegion) return;
+
+    const toast = document.createElement("div");
+    toast.className = "toast";
+    toast.setAttribute("role", "status");
+
+    const title = escapeHtml(notification.title);
+    const videoTitle = escapeHtml(notification.videoTitle);
+    const youtubeUrl = escapeHtml(notification.youtubeUrl);
+
+    toast.innerHTML = `
+      <div class="toast__title">${title}</div>
+      <div class="toast__body">
+        ${videoTitle}<br />
+        <a href="${youtubeUrl}" target="_blank" rel="noopener noreferrer">Open on YouTube</a>
+      </div>
+      <div class="toast__actions">
+        <button type="button" class="toast__dismiss" aria-label="Dismiss notification">Dismiss</button>
+      </div>
+    `;
+
+    const dismissButton = toast.querySelector(".toast__dismiss");
+
+    const removeToast = () => {
+      toast.remove();
+    };
+
+    dismissButton?.addEventListener("click", removeToast);
+    toastRegion.appendChild(toast);
+
+    window.setTimeout(removeToast, 8000);
+  }
+
+  async function refreshNotifications() {
+    try {
+      const res = await fetch("/api/notifications?limit=20", {
+        headers: { Accept: "application/json" },
+        cache: "no-store",
+      });
+
+      if (!res.ok) return;
+
+      const data = await res.json();
+      const notifications = Array.isArray(data.notifications)
+        ? data.notifications
+        : [];
+
+      renderNotifications(notifications);
+
+      for (const notification of notifications) {
+        if (!notification?.id) continue;
+
+        if (!hasInitialNotificationFetchCompleted) {
+          seenNotificationIds.add(notification.id);
+          continue;
+        }
+
+        if (!seenNotificationIds.has(notification.id)) {
+          seenNotificationIds.add(notification.id);
+          sessionUnreadCount += 1;
+          showToast(notification);
+        }
+      }
+
+      renderNotificationBadge(sessionUnreadCount);
+      hasInitialNotificationFetchCompleted = true;
+    } catch {
+      // Silent
+    }
+  }
+
+  notificationsButton?.addEventListener("click", () => {
+    sessionUnreadCount = 0;
+    renderNotificationBadge(sessionUnreadCount);
+  });
+
+  refreshNotifications();
+  setInterval(refreshNotifications, 8000);
 </script>
