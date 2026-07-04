@@ -214,61 +214,67 @@
     overflow: auto;
     z-index: 90;
     border-radius: 0.9rem;
-    background: #0f172a;
-    border: 1px solid rgba(148, 163, 184, 0.22);
-    box-shadow: 0 22px 48px rgba(0, 0, 0, 0.3);
+    background: #ffffff;
+    border: 1px solid #e5e7eb;
+    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.12);
   }
 
   .notifications-popover__header {
     padding: 0.9rem 1rem 0.75rem;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.14);
-    color: #f8fafc;
+    border-bottom: 1px solid #eef0f3;
+    color: #111827;
+    background: #fafafa;
+    border-top-left-radius: 0.9rem;
+    border-top-right-radius: 0.9rem;
   }
 
   .notifications-popover__list {
     display: flex;
     flex-direction: column;
+    padding: 0.25rem 0;
   }
 
-  .notification-item {
+  :global(.notification-item) {
     padding: 0.9rem 1rem;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    border-bottom: 1px solid #f1f5f9;
+    background: #ffffff;
   }
 
-  .notification-item:last-child {
+  :global(.notification-item:last-child) {
     border-bottom: none;
   }
 
-  .notification-item__title {
-    color: #4ade80;
+  :global(.notification-item__title) {
+    color: #15803d;
     font-weight: 700;
     margin-bottom: 0.2rem;
   }
 
-  .notification-item__meta {
-    color: #dbe4f0;
+  :global(.notification-item__meta) {
+    color: #374151;
     font-size: 0.92rem;
+    line-height: 1.4;
   }
 
-  .notification-item__time {
-    color: #94a3b8;
+  :global(.notification-item__time) {
+    color: #6b7280;
     font-size: 0.8rem;
     margin-top: 0.35rem;
   }
 
-  .notification-item a {
-    color: #93c5fd;
+  :global(.notification-item a) {
+    color: #2563eb;
     text-decoration: none;
   }
 
-  .notification-item a:hover,
-  .notification-item a:focus-visible {
+  :global(.notification-item a:hover),
+  :global(.notification-item a:focus-visible) {
     text-decoration: underline;
   }
 
-  .notifications-empty {
+  :global(.notifications-empty) {
     padding: 1rem;
-    color: #94a3b8;
+    color: #6b7280;
   }
 </style>
 

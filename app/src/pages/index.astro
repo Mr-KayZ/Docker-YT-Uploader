@@ -147,6 +147,7 @@ startScheduler();
     flex-direction: column;
     align-items: center;
   }
+
   .done-panel-inner {
     width: 100%;
     max-width: 600px;
@@ -170,6 +171,7 @@ startScheduler();
     align-self: flex-start;
     transition: background 0.15s;
   }
+
   .yt-link-btn:hover {
     background: #b91c1c;
   }
@@ -183,11 +185,13 @@ startScheduler();
     font-size: 0.875rem;
     padding: 2rem 0;
   }
+
   @keyframes spin {
     to {
       transform: rotate(360deg);
     }
   }
+
   .done-spinner {
     width: 16px;
     height: 16px;
@@ -197,6 +201,7 @@ startScheduler();
     animation: spin 0.8s linear infinite;
     flex-shrink: 0;
   }
+
   .done-error {
     background: #fef2f2;
     color: #991b1b;
@@ -214,9 +219,11 @@ startScheduler();
     font-size: 0.8rem;
     color: #888;
   }
+
   .done-field {
     margin-bottom: 0.875rem;
   }
+
   .done-field label {
     display: block;
     font-size: 0.8rem;
@@ -224,13 +231,16 @@ startScheduler();
     color: #444;
     margin-bottom: 0.3rem;
   }
+
   .done-field-row {
     display: flex;
     gap: 1rem;
   }
+
   .done-field-row .done-field {
     flex: 1;
   }
+
   .done-value {
     font-size: 0.875rem;
     color: #1a1a1a;
@@ -239,6 +249,7 @@ startScheduler();
     border: 1px solid #e5e5e5;
     border-radius: 6px;
   }
+
   .done-textarea {
     font-size: 0.875rem;
     color: #1a1a1a;
@@ -253,11 +264,13 @@ startScheduler();
     overflow-y: auto;
     line-height: 1.5;
   }
+
   .done-tags {
     display: flex;
     flex-wrap: wrap;
     gap: 0.4rem;
   }
+
   .done-tag {
     font-size: 0.75rem;
     background: #f0f0f0;
@@ -265,6 +278,7 @@ startScheduler();
     border-radius: 4px;
     padding: 0.2rem 0.5rem;
   }
+
   .done-back-btn {
     margin-top: 0.5rem;
   }
@@ -285,19 +299,23 @@ startScheduler();
     gap: 0.5rem;
     z-index: 100;
   }
+
   .upload-card.visible {
     display: flex;
   }
+
   .upload-card-header {
     display: flex;
     align-items: center;
     gap: 0.5rem;
   }
+
   .upload-card-title {
     font-size: 0.82rem;
     font-weight: 600;
     color: #1a1a1a;
   }
+
   .upload-card-filename {
     font-size: 0.78rem;
     color: #555;
@@ -305,6 +323,7 @@ startScheduler();
     overflow: hidden;
     text-overflow: ellipsis;
   }
+
   .upload-progress-track {
     width: 100%;
     height: 5px;
@@ -312,6 +331,7 @@ startScheduler();
     border-radius: 999px;
     overflow: hidden;
   }
+
   .upload-progress-bar {
     height: 100%;
     background: #2563eb;
@@ -319,12 +339,14 @@ startScheduler();
     width: 0%;
     transition: width 0.6s ease;
   }
+
   .upload-card-meta {
     display: flex;
     justify-content: space-between;
     font-size: 0.75rem;
     color: #888;
   }
+
   .upload-card-quota {
     font-size: 0.72rem;
     color: #aaa;
@@ -335,6 +357,7 @@ startScheduler();
   .upload-card-quota.warn {
     color: #dc2626;
   }
+
   .upload-spinner {
     width: 14px;
     height: 14px;
@@ -346,55 +369,90 @@ startScheduler();
   }
 
   /* Toast region */
-  .toast-region {
+  #toast-region {
     position: fixed;
+    top: 1rem;
     right: 1rem;
-    bottom: 1rem;
     z-index: 120;
     display: flex;
     flex-direction: column;
     gap: 0.75rem;
-    width: min(26rem, calc(100vw - 2rem));
+    width: min(24rem, calc(100vw - 2rem));
     pointer-events: none;
   }
-  .toast {
+
+  :global(.toast) {
     pointer-events: auto;
-    border-radius: 0.9rem;
-    border: 1px solid #22c55e;
-    background: #102416;
-    color: #ecfdf3;
-    box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
-    padding: 0.95rem 1rem;
+    position: relative;
+    border-radius: 10px;
+    border: 1px solid #e5e7eb;
+    border-left: 4px solid #22c55e;
+    background: #ffffff;
+    color: #111827;
+    box-shadow: 0 14px 32px rgba(15, 23, 42, 0.12);
+    padding: 0.9rem 1rem 0.85rem;
+    animation: toast-slide-down 220ms ease-out;
   }
-  .toast__title {
-    font-weight: 800;
-    color: #86efac;
-    margin-bottom: 0.3rem;
+
+  :global(.toast__title) {
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: #166534;
+    margin-bottom: 0.22rem;
   }
-  .toast__body {
-    color: #dcfce7;
-    font-size: 0.95rem;
+
+  :global(.toast__body) {
+    color: #374151;
+    font-size: 0.88rem;
     line-height: 1.45;
   }
-  .toast__body a {
-    color: #93c5fd;
+
+  :global(.toast__body a) {
+    color: #2563eb;
+    text-decoration: none;
   }
-  .toast__actions {
+
+  :global(.toast__body a:hover),
+  :global(.toast__body a:focus-visible) {
+    text-decoration: underline;
+  }
+
+  :global(.toast__actions) {
     display: flex;
     justify-content: flex-end;
-    margin-top: 0.7rem;
+    margin-top: 0.65rem;
   }
-  .toast__dismiss {
-    border: 1px solid rgba(134, 239, 172, 0.25);
-    background: transparent;
-    color: #ecfdf3;
-    border-radius: 0.5rem;
+
+  :global(.toast__dismiss) {
+    border: 1px solid #d1d5db;
+    background: #ffffff;
+    color: #374151;
+    border-radius: 6px;
     padding: 0.35rem 0.6rem;
+    font-size: 0.8rem;
     cursor: pointer;
+    transition:
+      background 0.15s,
+      border-color 0.15s,
+      color 0.15s;
   }
-  .toast__dismiss:hover,
-  .toast__dismiss:focus-visible {
-    background: rgba(255, 255, 255, 0.06);
+
+  :global(.toast__dismiss:hover),
+  :global(.toast__dismiss:focus-visible) {
+    background: #f9fafb;
+    border-color: #9ca3af;
+    color: #111827;
+  }
+
+  @keyframes toast-slide-down {
+    from {
+      opacity: 0;
+      transform: translateY(-12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 </style>
 
