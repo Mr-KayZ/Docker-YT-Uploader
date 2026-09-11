@@ -12,8 +12,8 @@
     "astro": "astro"
   },
   "dependencies": {
-    "@astrojs/node": "^10.1.4",
-    "astro": "^6.4.7",
+    "@astrojs/node": "^11.1.5",
+    "astro": "^7.3.2",
     "chokidar": "^5.0.0",
     "googleapis": "^173.0.0"
   },
